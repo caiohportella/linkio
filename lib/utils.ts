@@ -1,0 +1,126 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import {
+  SiInstagram,
+  SiTiktok,
+  SiYoutube,
+  SiLinkedin,
+  SiGithub,
+  SiWhatsapp,
+  SiSpotify,
+} from "react-icons/si";
+import { RiTwitterXFill } from "react-icons/ri";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export function getBaseUrl() {
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+
+  const isProduction = process.env.NODE_ENV == "production";
+
+  if (isProduction) {
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+      return process.env.NEXT_PUBLIC_APP_URL;
+    }
+
+    if (process.env.VERCEL_URL) {
+      return `https://${process.env.VERCEL_URL}`;
+    }
+
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+      return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+    }
+
+    throw new Error(
+      "No production URL configured. Please set NEXT_PUBLIC_APP_URL environment variable.",
+    );
+  }
+
+  return "http://localhost:3000";
+}
+
+export const formatDate = (dateString: string | null) => {
+  if (!dateString) return "N/A";
+
+  return new Date(dateString).toLocaleDateString("pt-BR", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+export const formatReferrer = (referrer: string | null) => {
+  if (!referrer || referrer == "direct") return "Direct";
+
+  try {
+    const url = new URL(referrer);
+
+    return url.hostname.replace("www.", "");
+  } catch {
+    return referrer;
+  }
+};
+
+export const formatUrl = (url: string) => {
+  try {
+    const urlObj = new URL(url);
+
+    return urlObj.hostname.replace("www.", "");
+  } catch {
+    return url;
+  }
+};
+
+export const SUPPORTED_SOCIALS = [
+  {
+    name: "Instagram",
+    icon: SiInstagram,
+    baseUrl: "https://www.instagram.com/",
+  },
+  {
+    name: "TikTok",
+    icon: SiTiktok,
+    baseUrl: "https://www.tiktok.com/@",
+  },
+  {
+    name: "YouTube",
+    icon: SiYoutube,
+    baseUrl: "https://www.youtube.com/",
+  },
+  {
+    name: "LinkedIn",
+    icon: SiLinkedin,
+    baseUrl: "https://www.linkedin.com/in/",
+  },
+  {
+    name: "GitHub",
+    icon: SiGithub,
+    baseUrl: "https://www.github.com/",
+  },
+  {
+    name: "WhatsApp",
+    icon: SiWhatsapp,
+    baseUrl: "https://wa.me/",
+  },
+  {
+    name: "X",
+    icon: RiTwitterXFill,
+    baseUrl: "https://x.com/",
+  },
+  {
+    name: "Spotify",
+    icon: SiSpotify,
+    baseUrl: "spotify:user:",
+  },
+];
+
+export function hexToRgba(hex: string, alpha: number) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}

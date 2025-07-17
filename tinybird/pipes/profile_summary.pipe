@@ -1,0 +1,30 @@
+DESCRIPTION >
+    Get summary analytics for a profile owner - total click, top links, etc.
+
+NODE profile_summary_node
+SQL >
+    %
+    SELECT
+        profileUserId,
+        any(profileUsername) as profileUsername,
+        count() as total_clicks,
+        uniq(profileUserId) as unique_users,
+        uniq(linkId) as total_links_clicked,
+        uniq(location_country) as countries_reached,
+        min(timestamp) as first_click,
+        max(timestamp) as last_click,
+        -- Top performing link
+        topK(1)(linkTitle) as top_link_title, 
+        -- Most common referrer
+        topK(1)(referrer) as top_referrer
+    FROM link_clicks
+    WHERE
+        profileUserId = {{String(profileUserId)}}
+        {% if defined(days_back) %}
+        AND timestamp >= now() - INTERVAL {{Int32(days_back)}} DAY
+        {% else %}
+        AND timestamp >= now() - INTERVAL 30 DAY
+        {% end %}
+    GROUP BY profileUserId
+
+TYPE endpoint

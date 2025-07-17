@@ -1,0 +1,14 @@
+{
+    "host": "https://api.us-east.tinybird.co",
+    "id": "ee44c4aa-3c25-47ac-b059-58a675c7256a",
+    "name": "linkio",
+    "scope": "user",
+    "token": "p.eyJ1IjogImVlNDRjNGFhLTNjMjUtNDdhYy1iMDU5LTU4YTY3NWM3MjU2YSIsICJpZCI6ICJhM2IyNDQ3Mi02ZjljLTQwNzEtOTUwNS0xNTVhNGUzNjE2MjIiLCAiaG9zdCI6ICJ1c19lYXN0In0.rLYvBkY3x6nZAC4GqABDWtvJXwp_lZkuthohlElqOms",
+    "tokens": {
+        "https://api.us-east.tinybird.co": "p.eyJ1IjogImVlNDRjNGFhLTNjMjUtNDdhYy1iMDU5LTU4YTY3NWM3MjU2YSIsICJpZCI6ICJhM2IyNDQ3Mi02ZjljLTQwNzEtOTUwNS0xNTVhNGUzNjE2MjIiLCAiaG9zdCI6ICJ1c19lYXN0In0.rLYvBkY3x6nZAC4GqABDWtvJXwp_lZkuthohlElqOms"
+    },
+    "user_email": "caiohportella@gmail.com",
+    "user_id": "0a7f4015-3462-4f3f-9764-f3de9e1e6004",
+    "user_token": "p.eyJ1IjogIjBhN2Y0MDE1LTM0NjItNGYzZi05NzY0LWYzZGU5ZTFlNjAwNCIsICJpZCI6ICI0ZGZmZDExMy1iMGFhLTRhZmYtYjQzNS1jNmFiNTkwY2VjN2YiLCAiaG9zdCI6ICJ1c19lYXN0In0.4DOxiJ30D566uEQB3R4Aw_sMVmULmGZlD0RG0RLsg0E",
+    "version": "0.0.1.dev245"
+}

@@ -1,0 +1,21 @@
+DESCRIPTION >
+    Track link clicks on user profile pages with full attribution
+
+SCHEMA >
+    `timestamp` DateTime `json:$.timestamp`,
+    `profileUsername` String `json:$.profileUsername`,
+    `profileUserId` String `json:$.profileUserId`,
+    `linkId` String `json:$.linkId`,
+    `linkTitle` String `json:$.linkTitle`,
+    `linkUrl` String `json:$.linkUrl`,
+    `userAgent` String `json:$.userAgent`,
+    `referrer` String `json:$.referrer`,
+    `location_country` String `json:$.location.country`,
+    `location_region` String `json:$.location.region`,
+    `location_city` String `json:$.location.city`,
+    `location_latitude` String `json:$.location.latitude`,
+    `location_longitude` String `json:$.location.longitude`,
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
+ENGINE_SORTING_KEY "timestamp, profileUserId, linkId"

@@ -1,0 +1,33 @@
+DESCRIPTION >
+    Get link click analytics for a specific profile owner with time filtering
+
+NODE lnik_analytics_node
+SQL >
+    %
+    SELECT
+        toDate(timestamp) as date,
+        linkTitle,
+        linkUrl,
+        count() as total_clicks,
+        uniq(profileUserId) as unique_users,
+        uniq(location_country) as countries_reached
+    FROM link_clicks
+    WHERE
+        profileUserId = {{String(profileUserId)}}
+        {% if defined(start_date) %}
+        AND date >= {{Date(start_date)}}
+        {% else %}
+        AND date >= today() - 30
+        {% end %}
+        {% if defined(end_date) %}
+        AND date <= {{Date(end_date)}}
+        {% else %}
+        AND date <= today()
+        {% end %}
+        {% if defined(linkId) %}
+        AND linkId = {{String(linkId)}}
+        {% end %}
+    GROUP BY date, linkTitle, linkUrl
+    ORDER BY date DESC, total_clicks DESC
+
+TYPE endpoint

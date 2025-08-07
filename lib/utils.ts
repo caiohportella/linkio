@@ -8,6 +8,8 @@ import {
   SiGithub,
   SiWhatsapp,
   SiSpotify,
+  SiLetterboxd,
+  SiGoodreads,
 } from "react-icons/si";
 import { RiTwitterXFill } from "react-icons/ri";
 
@@ -115,6 +117,16 @@ export const SUPPORTED_SOCIALS = [
     name: "Spotify",
     icon: SiSpotify,
     baseUrl: "spotify:user:",
+  },
+  {
+    name: "Letterboxd",
+    icon: SiLetterboxd,
+    baseUrl: "https://letterboxd.com/",
+  },
+  {
+    name: "Goodreads",
+    icon: SiGoodreads,
+    baseUrl: "https://www.goodreads.com/user/show/",
   },
 ];
 

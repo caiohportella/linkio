@@ -18,7 +18,7 @@ SQL >
         AND linkId = {{String(linkId)}}
         {% if defined(start_date) %}
         AND toDate(timestamp) >= {{Date(start_date)}}
-        { % else % }
+        {% else %}
         AND toDate(timestamp) >= today() - 30
         {% end %}
         {% if defined(end_date) %}

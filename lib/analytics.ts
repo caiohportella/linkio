@@ -139,7 +139,7 @@ export async function fetchLinkAnalytics(
       console.log("Fast link analytics failed, falling back to the original");
 
       tinybirdRes = await fetch(
-        `${process.env.TINYBIRD_HOST}/v0/pipes/fast_link_analytics.json?profileUserId${userId}&${linkId}&days_back=${daysBack}`,
+        `${process.env.TINYBIRD_HOST}/v0/pipes/link_analytics.json?profileUserId=${userId}&linkId=${linkId}&days_back=${daysBack}`,
         {
           headers: {
             Authorization: `Bearer ${process.env.TINYBIRD_TOKEN}`,

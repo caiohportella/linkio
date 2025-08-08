@@ -41,11 +41,11 @@ export async function POST(req: NextRequest) {
           userAgent: trackingEvent.userAgent,
           referrer: trackingEvent.referrer,
           location: {
-            country: trackingEvent.location.country || "",
-            region: trackingEvent.location.region || "",
-            city: trackingEvent.location.city || "",
-            latitude: trackingEvent.location.latitude || "",
-            longitude: trackingEvent.location.longitude || "",
+            country: trackingEvent.location.country || "Unknown",
+            region: trackingEvent.location.region || "Unknown",
+            city: trackingEvent.location.city || "Unknown",
+            latitude: trackingEvent.location.latitude?.toString() || "",
+            longitude: trackingEvent.location.longitude?.toString() || "",
           },
         };
 

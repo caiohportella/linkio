@@ -10,7 +10,7 @@ SQL >
         count() as total_clicks,
         uniq(profileUserId) as unique_users,
         uniq(linkId) as total_links_clicked,
-        uniq(location_country) as countries_reached,
+        uniq(CASE WHEN location_country != '' THEN location_country ELSE NULL END) as countries_reached,
         min(timestamp) as first_click,
         max(timestamp) as last_click,
         -- Top performing link

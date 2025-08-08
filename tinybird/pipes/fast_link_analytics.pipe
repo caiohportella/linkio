@@ -1,7 +1,7 @@
 DESCRIPTION >
     Fast link analytics using materialized daily performance data
 
-NODE fast_link_analytics_mode
+NODE fast_link_analytics_node
 SQL >
     %
     SELECT

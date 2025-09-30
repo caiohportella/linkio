@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
@@ -12,8 +11,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { SUPPORTED_SOCIALS } from "@/lib/utils";
 import { toast } from "sonner";
-import { SaveIcon, Trash2 } from "lucide-react";
-import { hexToRgba } from "@/lib/utils";
+import { Trash2 } from "lucide-react";
 
 interface SocialLinksModalProps {
   isOpen: boolean;

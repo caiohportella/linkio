@@ -2,19 +2,17 @@ import PublicPageContent from "@/components/PublicPageContent";
 import { api } from "@/convex/_generated/api";
 import { preloadQuery } from "convex/nextjs";
 import { Metadata } from "next";
-import { Doc, Id } from "@/convex/_generated/dataModel";
 import { ConvexHttpClient } from "convex/browser";
 import { CustomizationsWithUrl } from "@/convex/lib/userCustomizations";
 import { getBaseUrl } from "@/lib/utils";
 
-interface PublicLinkInBioPageProps {
-  params: { username: string };
-}
-
 export async function generateMetadata({
   params,
-}: PublicLinkInBioPageProps): Promise<Metadata> {
-  const { username } = params;
+}: {
+  params: Promise<{ username: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }> | undefined;
+}): Promise<Metadata> {
+  const { username } = await params;
   const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
   const preloadedCustomizationsData: CustomizationsWithUrl | null = await client.query(
@@ -56,8 +54,11 @@ export async function generateMetadata({
 
 const PublicLinkInBioPage = async ({
   params,
-}: PublicLinkInBioPageProps) => {
-  const { username } = params;
+}: {
+  params: Promise<{ username: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }> | undefined;
+}) => {
+  const { username } = await params;
 
   const [preloadedLinks, preloadedCustomizations] = await Promise.all([
     preloadQuery(api.lib.links.getLinksBySlug, {

@@ -13,7 +13,6 @@ import {
   SiTvtime,
   SiReddit,
   SiSteam,
-  SiStackoverflow,
   SiDuolingo,
 } from "react-icons/si";
 import { RiTwitterXFill, RiThreadsFill } from "react-icons/ri";

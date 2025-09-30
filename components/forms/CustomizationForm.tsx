@@ -13,7 +13,6 @@ import {
   Save,
   Trash2,
   Upload,
-  X,
   Link,
 } from "lucide-react";
 import React, {

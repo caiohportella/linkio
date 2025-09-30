@@ -20,12 +20,12 @@ const DashboardMetrics = ({ analytics }: DashboardMetricsProps) => {
   return (
     <div className=" p-4 lg:p-8 mb-8">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-gray-500/80 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-md shadow-gray-200/50">
+        <div className="bg-section-background backdrop-blur-sm border-2 border-section-border rounded-2xl p-8 shadow-md">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white/75 mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               Analytics Overview
             </h2>
-            <p className="text-white/75">Last 30 days performance metrics</p>
+            <p className="text-foreground">Last 30 days performance metrics</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">

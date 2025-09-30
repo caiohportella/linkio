@@ -87,76 +87,91 @@ export const SUPPORTED_SOCIALS = [
     name: "Instagram",
     icon: SiInstagram,
     baseUrl: "https://www.instagram.com/",
+    brandColor: "#E4405F",
   },
   {
     name: "TikTok",
     icon: SiTiktok,
     baseUrl: "https://www.tiktok.com/@",
+    brandColor: "#000000",
   },
   {
     name: "YouTube",
     icon: SiYoutube,
-    baseUrl: "https://www.youtube.com/",
+    baseUrl: "https://www.youtube.com/@",
+    brandColor: "#FF0000",
   },
   {
     name: "LinkedIn",
     icon: SiLinkedin,
     baseUrl: "https://www.linkedin.com/in/",
+    brandColor: "#0A66C2",
   },
   {
     name: "GitHub",
     icon: SiGithub,
     baseUrl: "https://www.github.com/",
+    brandColor: "#181717",
   },
   {
     name: "WhatsApp",
     icon: SiWhatsapp,
     baseUrl: "https://wa.me/",
+    brandColor: "#25D366",
   },
   {
     name: "X",
     icon: RiTwitterXFill,
     baseUrl: "https://x.com/",
+    brandColor: "#000000",
   },
   {
     name: "Spotify",
     icon: SiSpotify,
     baseUrl: "spotify:user:",
+    brandColor: "#1ED760",
   },
   {
     name: "Letterboxd",
     icon: SiLetterboxd,
     baseUrl: "https://letterboxd.com/",
+    brandColor: "#FF8000",
   },
   {
     name: "Goodreads",
     icon: SiGoodreads,
     baseUrl: "https://www.goodreads.com/user/show/",
+    brandColor: "#633A18",
   },
   {
     name: "Threads",
     icon: RiThreadsFill,
-    baseUrl: "https://www.threads.com/@"
+    baseUrl: "https://www.threads.com/@",
+    brandColor: "#000000",
   },
   {
     name: "TV Time",
     icon: SiTvtime,
-    baseUrl: "https://tvtime.com/r/"
+    baseUrl: "https://tvtime.com/r/",
+    brandColor: "#3777FF",
   },
   {
     name: "Reddit",
     icon: SiReddit,
-    baseUrl: "https://www.reddit.com/user/"
+    baseUrl: "https://www.reddit.com/user/",
+    brandColor: "#FF4500",
   },
   {
     name: "Steam",
     icon: SiSteam,
-    baseUrl: "https://steamcommunity.com/id/"
+    baseUrl: "https://steamcommunity.com/id/",
+    brandColor: "#171A21",
   },
   {
     name: "Duolingo",
     icon: SiDuolingo,
-    baseUrl: "https://www.duolingo.com/profile/"
+    baseUrl: "https://www.duolingo.com/profile/",
+    brandColor: "#58CC02",
   },
 ];
 

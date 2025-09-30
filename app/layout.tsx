@@ -3,6 +3,7 @@ import { Ramabhadra } from "next/font/google";
 import "./globals.css";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
+import { ThemeProvider } from "@/components/ThemeProvider"; // Import ThemeProvider
 
 import { Toaster } from "@/components/ui/sonner";
 // import { AnimatedBackground } from "@/components/AnimatedBackground";
@@ -27,13 +28,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${ramabhadra.variable} antialiased`}>
-        <ClerkProvider dynamic appearance={{ cssLayerName: "clerk"  }}>
-          <ConvexClientProvider>{children}</ConvexClientProvider>
-        </ClerkProvider>
-
-        <Toaster />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <ClerkProvider dynamic appearance={{ cssLayerName: "clerk"  }}>
+            <ConvexClientProvider>{children}</ConvexClientProvider>
+          </ClerkProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

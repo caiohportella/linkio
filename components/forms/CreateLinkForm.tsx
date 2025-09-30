@@ -26,6 +26,11 @@ const formSchema = z.object({
     .min(1, "Title is required")
     .max(100, "Title must be less than 100 characters"),
   url: z.string().url("Please enter a valid URL"),
+  imageUrl: z
+    .string()
+    .url("Please enter a valid image URL")
+    .optional()
+    .or(z.literal("")),
 });
 
 const CreateLinkForm = () => {
@@ -40,6 +45,7 @@ const CreateLinkForm = () => {
     defaultValues: {
       title: "",
       url: "",
+      imageUrl: "",
     },
   });
 
@@ -52,7 +58,7 @@ const CreateLinkForm = () => {
           title: values.title,
           url: values.url,
         });
-        router.push("/dashboard")
+        router.push("/dashboard");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to create link");
       }
@@ -67,12 +73,12 @@ const CreateLinkForm = () => {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black">Link Title</FormLabel>
+              <FormLabel className="text-foreground">Link Title</FormLabel>
               <FormControl>
                 <Input
                   placeholder="My link"
                   {...field}
-                  className="text-black rounded-2xl"
+                  className="text-muted-foreground rounded-2xl"
                 />
               </FormControl>
               <FormDescription>
@@ -88,12 +94,12 @@ const CreateLinkForm = () => {
           name="url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-black">URL</FormLabel>
+              <FormLabel className="text-foreground">URL</FormLabel>
               <FormControl>
                 <Input
                   placeholder="https://example.com"
                   {...field}
-                  className="text-black rounded-full"
+                  className="text-muted-foreground rounded-full"
                 />
               </FormControl>
               <FormDescription>
@@ -104,14 +110,12 @@ const CreateLinkForm = () => {
           )}
         />
 
-        {error && (
-          <div className="text-red-500 text-sm bg-red-50 p-3 rounded-md">
-            {error}
-          </div>
-        )}
-
         <div className="flex justify-end">
-          <Button type="submit" disabled={isSubmitting} className="rounded-2xl cursor-pointer">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-2xl cursor-pointer"
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />

@@ -83,7 +83,7 @@ const ManageLinks = ({
 
       <Button
         variant={"outline"}
-        className="w-full bg-[#009c00] hover:bg-[#00ff64] hover:text-white rounded-full transition-all duration-200 mt-4"
+        className="w-full dark:bg-accent dark:hover:bg-secondary-foreground bg-accent hover:bg-secondary-foreground text-white rounded-full transition-all duration-200 mt-4"
         asChild
       >
         <Link

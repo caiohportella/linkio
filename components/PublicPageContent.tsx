@@ -51,7 +51,7 @@ const PublicPageContent = ({
                         alt={`${username}'s profile`}
                         width={88}
                         height={88}
-                        className="w-full h-full object-contain rounded-full"
+                        className="w-full h-full object-cover rounded-full"
                       />
                     </div>
                   ) : (
@@ -117,7 +117,8 @@ const PublicPageContent = ({
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-gray-200/50 text-center">
+        <div className="flex flex-col items-center justify-center gap-2 mt-16 pt-8 border-t border-gray-200/50 text-center">
+        <Image src="/logo.png" alt="logo" width={50} height={50} />
           <p className="text-gray-600 text-sm">
             Powered by{" "}
             <Link

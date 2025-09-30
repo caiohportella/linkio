@@ -103,14 +103,14 @@ const UsernameForm = () => {
     <div className="space-y-6">
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-gradient-to-br from-black to-gray-500 rounded-lg">
-            <Link2 className="w-5 h-5 text-white" />
+          <div className="p-2 bg-gradient-to-br from-background to-muted rounded-lg">
+            <Link2 className="w-5 h-5 text-foreground" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-white/80">
+            <h2 className="text-xl font-semibold text-foreground mb-2">
               Customize Your Link
             </h2>
-            <p className="text-white/50 text-sm">
+            <p className="text-muted-foreground text-sm">
               Choose a custom username for your link-in-bio page. This will be
               your public URL.
             </p>
@@ -119,7 +119,7 @@ const UsernameForm = () => {
       </div>
 
       {hasCustomUsername && (
-        <div className="bg-green-50 border border-green-400 rounded-2xl p-4">
+        <div className="bg-card border border-green-400 rounded-2xl p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-green-500" />
@@ -128,7 +128,7 @@ const UsernameForm = () => {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-green-600 bg-[#0d2630] px-2 py-1 rounded text-sm">
+              <span className="font-mono text-green-600 bg-background px-2 py-1 rounded text-sm">
                 {currentSlug}
               </span>
               <Link
@@ -144,31 +144,28 @@ const UsernameForm = () => {
         </div>
       )}
 
-      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+      <div className="bg-card border border-border rounded-2xl p-4">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-2 h-2 bg-[#0d2630] rounded-full"></div>
-          <span className="text-sm font-medium text-gray-700">
+          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+          <span className="text-sm font-medium text-foreground">
             Your Link Preview
           </span>
         </div>
-        <div className="flex items-center">
-          <Link
-            href={`/u/${currentSlug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-gray-800 bg-white px-3 py-2 rounded border-l border-y hover:bg-gray-50 transition-colors truncate"
+        <div className="flex items-center gap-1.5">
+          <div
+            className="flex-1 text-foreground bg-input px-3 py-2 rounded border-l border-y truncate"
           >
             {getBaseUrl()}/u/{currentSlug}
-          </Link>
+          </div>
           <button
             onClick={() => {
               navigator.clipboard.writeText(`${getBaseUrl()}/u/${currentSlug}`);
               toast.success("Copied to clipboard!");
             }}
-            className="cursor-pointer flex items-center justify-center w-10 h-10 bg-white border rounded-r hover:bg-gray-50 transition-colors"
+            className="cursor-pointer flex items-center justify-center w-10 h-10 bg-input border rounded-r hover:bg-muted transition-colors"
             title="Copy to clipboard"
           >
-            <Copy className="w-4 h-4 text-gray-500" />
+            <Copy className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
       </div>
@@ -186,20 +183,20 @@ const UsernameForm = () => {
                     <Input
                       placeholder="your_username"
                       {...field}
-                      className="pr-10 text-white rounded-2xl"
+                      className="pr-10 text-foreground rounded-2xl"
                     />
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                       {status === "checking" && (
-                        <Loader2 className="w-4 h-4 text-green-500 animate-spin" />
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
                       )}
                       {status === "available" && (
                         <CheckCircle className="w-4 h-4 text-green-500" />
                       )}
                       {status === "current" && (
-                        <User className="w-4 h-4 text-[#0d2630]" />
+                        <User className="w-4 h-4 text-primary" />
                       )}
                       {status === "unavailable" && (
-                        <AlertCircle className="w-4 h-4 text-red-500" />
+                        <AlertCircle className="w-4 h-4 text-destructive" />
                       )}
                     </div>
                   </div>
@@ -214,12 +211,12 @@ const UsernameForm = () => {
                   </p>
                 )}
                 {status === "current" && (
-                  <p className="text-sm text-blue-400">
+                  <p className="text-sm text-primary">
                     This is your current username
                   </p>
                 )}
                 {status === "unavailable" && (
-                  <p className="text-sm text-red-400">
+                  <p className="text-sm text-destructive">
                     {availabilityCheck?.error || "Username is already taken"}
                   </p>
                 )}
@@ -231,7 +228,7 @@ const UsernameForm = () => {
           <div className="flex justify-end">
             <Button
               type="submit"
-              className="cursor-pointer bg-[#009c00] hover:bg-[#00ff64] disabled:opacity-50 rounded-2xl text-white"
+              className="cursor-pointer bg-primary hover:bg-primary/90 disabled:opacity-50 rounded-2xl text-primary-foreground"
               disabled={isSubmitDisabled}
             >
               {form.formState.isSubmitting ? (

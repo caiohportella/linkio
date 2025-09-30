@@ -3,7 +3,14 @@
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { BarChart3, GripVertical, Loader2, Pencil, Save, Trash2 } from "lucide-react";
+import {
+  BarChart3,
+  GripVertical,
+  Loader2,
+  Pencil,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -75,13 +82,13 @@ const SortableItem = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="p-4 border border-gray-200 rounded-2xl bg-white/50 shadow-sm hover:shadow-md transition-shadow"
+      className="p-4 border border-border rounded-2xl bg-input shadow-sm hover:shadow-md transition-shadow"
     >
       {isEditing ? (
         <div className="space-y-4">
           <div className="space-y-2">
             <label
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-foreground"
               htmlFor="title"
             >
               Title
@@ -90,14 +97,14 @@ const SortableItem = ({
               id="title"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2 text-sm text-black shadow-sm focus:border-black focus:outline-none"
+              className="w-full rounded-2xl border border-border p-2 text-foreground shadow-sm focus:border-primary focus:outline-none"
               placeholder="Enter title"
             />
           </div>
 
           <div className="space-y-2">
             <label
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-foreground"
               htmlFor="url"
             >
               URL
@@ -106,13 +113,18 @@ const SortableItem = ({
               id="url"
               value={editUrl}
               onChange={(e) => setEditUrl(e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2 text-sm text-black shadow-sm focus:border-black focus:outline-none"
-              placeholder="https://example.com"
+              className="w-full rounded-2xl border border-border p-2 text-foreground shadow-sm focus:border-primary focus:outline-none"
+              placeholder="Enter URL"
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={handleCancel} className="text-black/75">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleCancel}
+              className="rounded-2xl text-muted-foreground"
+            >
               Cancel
             </Button>
             <Button
@@ -143,23 +155,25 @@ const SortableItem = ({
             {...attributes}
             {...listeners}
             aria-describedby={`link=${id}`}
-            className="cursor-pointer hover:bg-gray-100 rounded flex-shrink-0"
+            className="cursor-move hover:bg-muted rounded flex-shrink-0"
           >
-            <GripVertical className="w-4 h-4 text-gray-400" />
+            <GripVertical className="w-4 h-4 text-muted-foreground" />
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0 pr-3">
-            <h3 className="font-semibold text-lg text-black truncate">{link.title}</h3>
-            <p className="text-gray-600 text-sm truncate">{link.url}</p>
+            <h3 className="font-semibold text-lg text-foreground truncate cursor-default">
+              {link.title}
+            </h3>
+            <p className="text-muted-foreground text-sm truncate cursor-default">{link.url}</p>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-1 flex-shrink-0">
             {/* Analytics Button */}
-            <Button variant={"outline"} size="icon" className="h-8 w-8" asChild>
+            <Button variant={"outline"} size="icon" className="cursor-pointer h-8 w-8" asChild>
               <Link href={`/dashboard/link/${id}`}>
-                <BarChart3 className="w-3.5 h-3.5 text-green-500" />
+                <BarChart3 className="w-3.5 h-3.5 text-primary" />
               </Link>
             </Button>
 
@@ -167,19 +181,19 @@ const SortableItem = ({
             <Button
               variant={"outline"}
               size={"icon"}
-              className="h-8 w-8"
+              className="cursor-pointer h-8 w-8"
               onClick={() => {
                 setIsEditing(true);
               }}
             >
-              <Pencil className="w-3.5 h-3.5" />
+              <Pencil className="w-3.5 h-3.5 text-foreground" />
             </Button>
 
             {/* Delete Button */}
             <Button
               variant={"outline"}
               size={"icon"}
-              className="h-8 w-8"
+              className="cursor-pointer h-8 w-8"
               onClick={(e) => {
                 e.stopPropagation();
 
@@ -192,7 +206,7 @@ const SortableItem = ({
                 }
               }}
             >
-              <Trash2 className="w-3.5 h-3.5 text-red-500" />
+              <Trash2 className="w-3.5 h-3.5 text-destructive" />
             </Button>
           </div>
         </div>

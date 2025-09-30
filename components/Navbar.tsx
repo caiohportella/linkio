@@ -7,6 +7,7 @@ import { Authenticated } from "convex/react";
 import { UserButton } from "@clerk/nextjs";
 import { Plus } from "lucide-react";
 import Image from "next/image";
+import { ThemeToggle } from "@/components/ThemeToggle"; // Import ModeToggle
 
 export default function Navbar() {
   const router = useRouter();
@@ -46,12 +47,13 @@ export default function Navbar() {
               onClick={() => router.push("/dashboard/new-link")}
               className="rounded-full w-8 h-8 md:w-auto md:h-auto px-0 md:px-4 py-0 md:py-2"
             >
-              <div className="flex justify-center items-center">
+              <div className="cursor-pointer flex justify-center items-center">
                 <Plus className="w-4 h-4 animate-pulse" />
                 <span className="hidden md:inline ml-2">Add Link</span>
               </div>
             </Button>
 
+            <ThemeToggle />
             <UserButton />
           </motion.div>
         </Authenticated>

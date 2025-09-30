@@ -7,33 +7,30 @@ import {
   ImageIcon,
   Loader2,
   Palette,
+  PencilIcon,
+  PaintBucketIcon,
   Plus,
   Save,
   Trash2,
   Upload,
   X,
+  Link,
 } from "lucide-react";
 import React, {
-  startTransition,
   useEffect,
   useRef,
   useState,
   useTransition,
+  startTransition,
 } from "react";
 import { Label } from "../ui/label";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { toast } from "sonner";
 import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
 import { SUPPORTED_SOCIALS } from "@/lib/utils";
+import SocialLinksModal from "@/components/SocialLinksModal";
 
 const CustomizationForm = () => {
   const { user } = useUser();
@@ -62,6 +59,12 @@ const CustomizationForm = () => {
     { platform: string; url: string }[]
   >([]);
 
+  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+  const [editingSocialLink, setEditingSocialLink] = useState<{
+    platform: string;
+    url: string;
+  } | null>(null);
+
   const [isLoading, startLoading] = useTransition();
   const [isUploading, startUploading] = useTransition();
 
@@ -76,30 +79,14 @@ const CustomizationForm = () => {
   }, [existingCustomizations]);
 
   const handleAddSocial = () => {
-    setSocialLinks((prev) => [...prev, { platform: "", url: "" }]);
+    setIsSocialModalOpen(true);
   };
 
-  const handleRemoveSocial = (index: number) => {
-    setSocialLinks((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleUpdateSocial = (
-    index: number,
-    field: "platform" | "url",
-    value: string,
-  ) => {
-    const updated = [...socialLinks];
-
-    if (field === "platform") {
-      const base =
-        SUPPORTED_SOCIALS.find((s) => s.name === value)?.baseUrl || "";
-      updated[index].platform = value;
-      updated[index].url = base; // sobrescreve o campo `url`
-    } else {
-      updated[index].url = value;
-    }
-
-    setSocialLinks(updated);
+  const handleRemoveSocial = (platformName: string) => {
+    setSocialLinks((prev) =>
+      prev.filter((link) => link.platform !== platformName),
+    );
+    toast.success(`${platformName} link removed!`);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -191,14 +178,14 @@ const CustomizationForm = () => {
     <div className="w-full">
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-gradient-to-br from-black to-gray-500 rounded-lg">
-            <Palette className="w-5 h-5 text-white" />
+          <div className="p-2 bg-gradient-to-br from-background to-muted rounded-lg">
+            <Palette className="w-5 h-5 text-foreground" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-white/80">
+            <h2 className="text-xl font-semibold text-foreground mb-2">
               Customize Your Page
             </h2>
-            <p className="text-white/50 text-sm">
+            <p className="text-muted-foreground text-sm">
               Personalize your public link page with custom profile picture,
               description and accent color.
             </p>
@@ -210,13 +197,13 @@ const CustomizationForm = () => {
         {/* Profile Picture Upload */}
         <div className="space-y-4">
           <Label className="flex items-center gap-2">
-            <ImageIcon className="w-4 h-4" />
+            <ImageIcon className="w-4 h-4 text-foreground" />
             Profile Picture
           </Label>
 
           {/* Current Image Display */}
           {existingCustomizations?.profilePictureUrl && (
-            <div className="flex items-center gap-4 p-4 bg-[#f9fafb] rounded-2xl">
+            <div className="flex items-center gap-4 p-4 bg-muted/20 rounded-2xl">
               <div className="w-16 h-16 rounded-lg overflow-hidden">
                 <Image
                   src={existingCustomizations.profilePictureUrl}
@@ -227,10 +214,10 @@ const CustomizationForm = () => {
                 />
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-700 font-medium">
+                <p className="text-sm text-foreground font-medium">
                   Current profile picture
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Click &ldquo;Remove&ldquo; to delete this image
                 </p>
               </div>
@@ -240,7 +227,7 @@ const CustomizationForm = () => {
                 size={"sm"}
                 onClick={handleRemoveImage}
                 disabled={isLoading}
-                className="rounded-full text-red-500 hover:text-red-700 hover:bg-red-50"
+                className="cursor-pointer rounded-full text-destructive hover:text-destructive/80 hover:bg-destructive/10"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -262,7 +249,7 @@ const CustomizationForm = () => {
               variant={"outline"}
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="flex items-center gap-2"
+              className="cursor-pointer flex items-center gap-2"
             >
               {isUploading ? (
                 <>
@@ -276,7 +263,7 @@ const CustomizationForm = () => {
                 </>
               )}
             </Button>
-            <p className="text-sm text-white/75">
+            <p className="text-sm text-muted-foreground">
               Max 5MB. Supports JPG, PNG, GIF, WebP
             </p>
           </div>
@@ -284,23 +271,29 @@ const CustomizationForm = () => {
 
         {/* Description */}
         <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <Label className="flex items-center gap-2">
+            <PencilIcon className="w-4 h-4 text-foreground" />
+            Description
+          </Label>
           <Textarea
             id="description"
             placeholder="Tell visitors about yourself..."
             value={formData.description}
             onChange={(e) => handleInputChange("description", e.target.value)}
-            className="w-full min-h-[100px] px-3 py-2 text-white border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-vertical"
+            className="w-full min-h-[100px] px-3 py-2 text-foreground border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-vertical"
             maxLength={200}
           />
-          <p className="text-sm text-white/75">
+          <p className="text-sm text-muted-foreground">
             {formData.description.length}/200 characters
           </p>
         </div>
 
         {/* Accent Color Picker */}
         <div className="space-y-3">
-          <Label htmlFor="accentColor">Accent Color</Label>
+          <Label className="flex items-center gap-2">
+            <PaintBucketIcon className="w-4 h-4 text-foreground" />
+            Accent Color
+          </Label>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <Input
@@ -313,7 +306,7 @@ const CustomizationForm = () => {
                 className="w-12 h-12 rounded-lg cursor-pointer border-none p-0"
               />
               <div>
-                <p className="text-sm font-medium text-white/75">
+                <p className="text-sm font-medium text-foreground">
                   Choose your brand color
                 </p>
                 <p className="text-xs" style={{ color: formData.accentColor }}>
@@ -322,97 +315,55 @@ const CustomizationForm = () => {
               </div>
             </div>
           </div>
-          <p className="text-sm text-white/55">
+          <p className="text-sm text-muted-foreground">
             This color will be used as an accent in your page header
           </p>
         </div>
 
         {/* Social Links */}
-        <div className="space-y-2">
-          <Label className="pb-4">Social Links</Label>
+        <div className="space-y-4">
+          <Label className="flex items-center gap-2">
+            <Link className="w-4 h-4 text-foreground" />
+            Social Links
+          </Label>
 
           {socialLinks.length === 0 ? (
             <Button
               type="button"
               variant="secondary"
               size="sm"
-              onClick={handleAddSocial}
+              onClick={() => {
+                setEditingSocialLink(null);
+                handleAddSocial();
+              }}
             >
               + Add Social Link
             </Button>
           ) : (
-            <div className="rounded-3xl bg-white/10 p-4 space-y-4">
+            <div className="flex flex-wrap gap-3">
               {socialLinks.map((link, index) => {
                 const selectedPlatform = SUPPORTED_SOCIALS.find(
                   (s) => s.name === link.platform,
                 );
-                const baseUrl = selectedPlatform?.baseUrl || "";
+                const Icon = selectedPlatform?.icon;
 
                 return (
-                  <div
-                    key={index}
-                    className="space-y-1 rounded-2xl p-4 bg-white/10 backdrop-blur-sm border border-white/10"
-                  >
-                    <div className="flex flex-col sm:flex-row gap-2 items-center justify-between">
-                      {/* Select Platform */}
-                      <Select
-                        value={link.platform}
-                        onValueChange={(value) =>
-                          handleUpdateSocial(index, "platform", value)
-                        }
-                      >
-                        <SelectTrigger className="w-full sm:w-40 rounded-2xl">
-                          <SelectValue placeholder="Select platform" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SUPPORTED_SOCIALS.map((social) => (
-                            <SelectItem key={social.name} value={social.name}>
-                              {social.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      {/* Username input */}
-                      {link.platform && (
-                        <div className="flex w-full items-center">
-                          <Input
-                            className="rounded-2xl"
-                            placeholder={
-                              link.platform === "WhatsApp"
-                                ? "number"
-                                : "username"
-                            }
-                            value={link.url.replace(baseUrl, "")}
-                            onChange={(e) =>
-                              handleUpdateSocial(
-                                index,
-                                "url",
-                                baseUrl + e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-                      )}
-
-                      {/* Remove Button */}
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="link"
-                        onClick={() => handleRemoveSocial(index)}
-                        className="text-red-500 hover:text-red-700 cursor-pointer"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    {/* Preview */}
-                    {link.url && (
-                      <p className="text-xs text-white/60 break-all mt-4">
-                        <span className="underline">{link.url}</span>
-                      </p>
-                    )}
+                  <div key={index} className="relative group">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="cursor-pointer w-12 h-12 rounded-2xl flex items-center justify-center p-0 bg-white/70 hover:bg-white/90 transition-all duration-200 shadow-md"
+                      onClick={() => {
+                        setEditingSocialLink(link);
+                        handleAddSocial();
+                      }}
+                    >
+                      {Icon && <Icon className="w-6 h-6 text-foreground" />}
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl">
+                        <PencilIcon className="w-5 h-5 text-foreground/70" />
+                      </div>
+                    </Button>
                   </div>
                 );
               })}
@@ -421,8 +372,11 @@ const CustomizationForm = () => {
                 type="button"
                 variant="secondary"
                 size="sm"
-                onClick={handleAddSocial}
-                className="mt-2 rounded-2xl"
+                onClick={() => {
+                  setEditingSocialLink(null);
+                  handleAddSocial();
+                }}
+                className="cursor-pointer mt-2 rounded-2xl"
               >
                 <Plus className="w-4 h-4 animate-pulse" />
               </Button>
@@ -435,7 +389,7 @@ const CustomizationForm = () => {
           <Button
             type="submit"
             disabled={isLoading || isUploading}
-            className="text-white bg-[#009c00] hover:bg-[#00ff64] rounded-full"
+            className="text-primary-foreground bg-primary hover:bg-primary/90 rounded-full"
           >
             {isLoading ? (
               <>
@@ -450,6 +404,19 @@ const CustomizationForm = () => {
           </Button>
         </div>
       </form>
+
+      <SocialLinksModal
+        isOpen={isSocialModalOpen}
+        onOpenChange={(open) => {
+          setIsSocialModalOpen(open);
+          if (!open) setEditingSocialLink(null); // Reset when modal closes
+        }}
+        socialLinks={socialLinks}
+        setSocialLinks={setSocialLinks}
+        initialLink={editingSocialLink}
+        onClearInitialLink={() => setEditingSocialLink(null)} // Clear editing link on back
+        handleRemoveSocial={handleRemoveSocial}
+      />
     </div>
   );
 };

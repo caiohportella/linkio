@@ -26,7 +26,7 @@ const DashboardPage = async () => {
       {/* Customize Link URL */}
       <div className="bg-grandient-to-br from-gray-50 to-gray-100 p-4 lg:p-8 mb-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-gray-500/80 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-md shadow-gray-200/50">
+          <div className="bg-section-background backdrop-blur-sm border-2 border-section-border rounded-2xl p-8 shadow-md">
             <UsernameForm />
           </div>
         </div>
@@ -35,7 +35,7 @@ const DashboardPage = async () => {
       {/* Customize Profile */}
       <div className="bg-grandient-to-br from-gray-50 to-gray-100 p-4 lg:p-8 mb-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-gray-500/80 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-md shadow-gray-200/50">
+          <div className="bg-section-background backdrop-blur-sm border-2 border-section-border rounded-2xl p-8 shadow-md">
             <CustomizationForm />
           </div>
         </div>
@@ -44,19 +44,19 @@ const DashboardPage = async () => {
       {/* Manage Links */}
       <div className="min-h-screen p-4 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-gray-500/80 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-md shadow-gray-200/50">
+          <div className="bg-section-background backdrop-blur-sm border-2 border-section-border rounded-2xl p-8 shadow-md">
             <div className="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-16">
               {/* Left Side - Title and Description */}
               <div className="lg:w-2/5 lg:sticky top-8">
                 <div className="space-y-6">
                   <div>
-                    <h1 className="text-4xl lg:text-5xl font-bold text-white/75 leading-tight">
+                    <h1 className="text-4xl lg:text-5xl font-bold text-foreground leading-tight">
                       Manage Your Links
                     </h1>
                     <div className="w-20 h-1 bg-gradient-to-r from-gray-800 via-emerald-500 to-[#1cabe9] rounded-full ml-4" />
                   </div>
 
-                  <p className="text-lg text-white/75 leading-relaxed">
+                  <p className="text-lg text-muted-foreground leading-relaxed">
                     Organize and customize your link-in-bio page. Drag and drop
                     to reorder, edit details or remove links that are no longer
                     needed.
@@ -65,17 +65,17 @@ const DashboardPage = async () => {
                   <div className="space-y-4 pt-4">
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      <span className="text-white/80">
+                      <span className="text-muted-foreground">
                         Drag & drop to reorder
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 bg-purple-500 rounded-full" />
-                      <span className="text-white/80">Realtime updates</span>
+                      <span className="text-muted-foreground">Realtime updates</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span className="text-white/80">
+                      <span className="text-muted-foreground">
                         Click tracking analytics
                       </span>
                     </div>
@@ -85,12 +85,12 @@ const DashboardPage = async () => {
 
               {/* Right Side - Link Management */}
               <div className="lg:w-3/5">
-                <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-xl gray-200/50">
+                <div className="dark:bg-card backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-xl gray-200/50">
                   <div className="mb-6">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h2 className="text-xl font-semibold text-foreground mb-2">
                       Your Links
                     </h2>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                       Drag to reorder, click to edit or delete unwanted links
                     </p>
                   </div>

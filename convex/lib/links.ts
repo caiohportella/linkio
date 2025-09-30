@@ -89,6 +89,7 @@ export const updateLink = mutation({
     linkId: v.id("links"),
     title: v.string(),
     url: v.string(),
+    imageUrl: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async ({ db, auth }, args) => {

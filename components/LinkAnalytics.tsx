@@ -25,11 +25,11 @@ const LinkAnalytics = async ({ analytics }: LinkAnalyticsProps) => {
       {/* Header with back button */}
       <div className="p-4 lg:p-8 mb-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-gray-500/80 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-md shadow-gray-200/50">
+          <div className="bg-section-background backdrop-blur-sm border-2 border-section-border rounded-2xl p-8 shadow-md">
             <div className="flex items-center gap-4 mb-6">
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 text-white/75 hover:text-gray-900 transition-colors"
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span className="font-medium">Back to Dashboard</span>
@@ -37,12 +37,12 @@ const LinkAnalytics = async ({ analytics }: LinkAnalyticsProps) => {
             </div>
 
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-white/80 mb-2">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
                 {analytics.linkTitle}
               </h1>
               <Link
                 href={analytics.linkUrl}
-                className="flex items-center gap-2 text-white/80"
+                className="flex items-center gap-2 text-muted-foreground"
               >
                 <ExternalLink className="w-4 h-4" />
                 <span className="text-sm">{formatUrl(analytics.linkUrl)}</span>
@@ -86,16 +86,16 @@ const LinkAnalytics = async ({ analytics }: LinkAnalyticsProps) => {
       {analytics.dailyData.length > 0 && (
         <div className="p-4 lg:p-8 mb-8">
           <div className="max-w-7xl mx-auto">
-            <div className="bg-gray-500/80 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-md shadow-gray-200/50">
+            <div className="bg-section-background backdrop-blur-sm border-2 border-section-border rounded-2xl p-8 shadow-md">
               <div className="flex items-center gap-4 mb-6">
                 <div className="p-3 bg-gradient-to-br from-black to-gray-500 rounded-xl">
                   <BarChart3 className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white/80">
+                  <h2 className="text-2xl font-bold text-foreground mb-2">
                     Daily Performance
                   </h2>
-                  <p className="text-white/80">Last 30 days activity</p>
+                  <p className="text-muted-foreground">Last 30 days activity</p>
                 </div>
               </div>
 
@@ -104,7 +104,7 @@ const LinkAnalytics = async ({ analytics }: LinkAnalyticsProps) => {
 
               {analytics.dailyData.length > 10 && (
                 <div className="mt-6 text-center">
-                  <p className="text-gray-500 text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Showing last 10 days · {analytics.dailyData.length}
                     days total
                   </p>
@@ -119,14 +119,14 @@ const LinkAnalytics = async ({ analytics }: LinkAnalyticsProps) => {
       {analytics.dailyData.length === 0 && (
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8 mb-8">
           <div className="max-w-7xl mx-auto">
-            <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-xl shadow-gray-200/50 text-center">
-              <div className="text-gray-400 mb-4">
+            <div className="bg-section-background backdrop-blur-sm border-2 border-section-border rounded-2xl p-8 shadow-md text-center">
+              <div className="text-muted-foreground mb-4">
                 <BarChart3 className="w-16 h-16 mx-auto" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 No analytics data yet
               </h3>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Analytics will appear here once this link starts receiving
                 clicks.
               </p>

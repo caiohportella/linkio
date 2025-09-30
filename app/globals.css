@@ -36,6 +36,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-section-background: var(--section-background);
+  --color-section-border: var(--section-border);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -43,47 +45,53 @@
 }
 
 :root {
-  --background: #06090a;
-  --foreground: #ebeef0;
-  --card: #06090a;
-  --card-foreground: #ebeef0;
-  --popover: #06090a;
-  --popover-foreground: #ebeef0;
-  --primary: #99c7db;
-  --primary-foreground: #06090a;
-  --secondary: #1e6b8a;
-  --secondary-foreground: #ebeef0;
-  --accent: #1cabe9;
-  --accent-foreground: #06090a;
-  --muted: #1e6b8a;
-  --muted-foreground: #99c7db;
-  --border: #1e6b8a;
-  --input: #1e6b8a;
-  --ring: #1cabe9;
-  --destructive: #e11d48;
-  --destructive-foreground: #fef2f2;
+  --background: #ffffff; /* Light background */
+  --foreground: #020817; /* Dark foreground for contrast */
+  --card: #ffffff; /* Card background */
+  --card-foreground: #020817; /* Card foreground */
+  --popover: #ffffff; /* Popover background */
+  --popover-foreground: #020017; /* Popover foreground */
+  --primary: #49a6f6; /* Primary blue for light mode */
+  --primary-foreground: #ffffff; /* Primary foreground text */
+  --secondary: #e0f2fe; /* Light secondary blue */
+  --secondary-foreground: #0c4a6e; /* Dark secondary text */
+  --muted: #f1f5f9; /* Muted light gray */
+  --muted-foreground: #64748b; /* Muted dark gray text */
+  --accent: #49a6f6; /* Accent blue */
+  --accent-foreground: #ffffff; /* Accent foreground text */
+  --border: #e2e8f0; /* Light border color */
+  --input: #e2e8f0; /* Input border color */
+  --ring: #49a6f6; /* Ring focus color */
+  --destructive: #ef4444; /* Destructive red */
+  --destructive-foreground: #fef2f2; /* Destructive text */
+
+  --section-background: hsl(0 0% 98%); /* Light background for sections */
+  --section-border: hsl(210 40% 96.1%); /* Light border for sections */
 }
 
 .dark {
-  --background: #06090a;
-  --foreground: #ebeef0;
-  --card: #06090a;
-  --card-foreground: #ebeef0;
-  --popover: #06090a;
-  --popover-foreground: #ebeef0;
-  --primary: #99c7db;
-  --primary-foreground: #06090a;
-  --secondary: #1e6b8a;
-  --secondary-foreground: #ebeef0;
-  --accent: #1cabe9;
-  --accent-foreground: #06090a;
-  --muted: #1e6b8a;
-  --muted-foreground: #99c7db;
-  --border: #1e6b8a;
-  --input: #1e6b8a;
-  --ring: #1cabe9;
-  --destructive: #e11d48;
-  --destructive-foreground: #fef2f2;
+  --background: #020817; /* Dark background */
+  --foreground: #ebeef0; /* Light foreground */
+  --card: #020817; /* Card background */
+  --card-foreground: #ebeef0; /* Card foreground */
+  --popover: #020817; /* Popover background */
+  --popover-foreground: #ebeef0; /* Popover foreground */
+  --primary: #49a6f6; /* Primary blue for dark mode */
+  --primary-foreground: #ebeef0; /* Primary foreground text */
+  --secondary: #172554; /* Dark secondary blue */
+  --secondary-foreground: #bfdbfe; /* Light secondary text */
+  --muted: #1e293b; /* Muted dark gray */
+  --muted-foreground: #94a3b8; /* Muted light gray text */
+  --accent: #49a6f6; /* Accent blue */
+  --accent-foreground: #ebeef0; /* Accent foreground text */
+  --border: #334155; /* Dark border color */
+  --input: #334155; /* Input border color */
+  --ring: #49a6f6; /* Ring focus color */
+  --destructive: #ef4444; /* Destructive red */
+  --destructive-foreground: #fef2f2; /* Destructive text */
+
+  --section-background: hsl(222.2 47.4% 11.2%); /* Dark background for sections */
+  --section-border: hsl(215.4 16.3% 18.2%); /* Dark border for sections */
 }
 
 @layer base {

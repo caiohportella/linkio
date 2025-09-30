@@ -93,7 +93,7 @@ jobs:
         CLERK_JWT_ISSUER_DOMAIN: ${{ secrets.CLERK_JWT_ISSUER_DOMAIN }}
         
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build-files
         path: .next/
@@ -134,7 +134,7 @@ jobs:
       run: pnpm install
       
     - name: Run tests
-      run: pnpm test --passWithNoTests
+      run: pnpm test
       
   security-audit:
     runs-on: ubuntu-latest

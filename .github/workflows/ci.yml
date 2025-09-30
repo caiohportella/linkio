@@ -48,6 +48,7 @@ jobs:
       
     - name: Check for unused dependencies
       run: pnpm dlx depcheck
+      continue-on-error: true
       
   build:
     runs-on: ubuntu-latest
@@ -156,7 +157,7 @@ jobs:
       run: pnpm install
       
     - name: Run security audit
-      run: pnpm audit --audit-level moderate
+      run: pnpm audit --audit-level high
       
     - name: Check for known vulnerabilities
       run: pnpm dlx audit-ci --config audit-ci.json

@@ -10,6 +10,11 @@ import {
   SiSpotify,
   SiLetterboxd,
   SiGoodreads,
+  SiTvtime,
+  SiReddit,
+  SiSteam,
+  SiStackoverflow,
+  SiDuolingo,
 } from "react-icons/si";
 import { RiTwitterXFill, RiThreadsFill } from "react-icons/ri";
 
@@ -132,7 +137,27 @@ export const SUPPORTED_SOCIALS = [
     name: "Threads",
     icon: RiThreadsFill,
     baseUrl: "https://www.threads.com/@"
-  }
+  },
+  {
+    name: "TV Time",
+    icon: SiTvtime,
+    baseUrl: "https://tvtime.com/r/"
+  },
+  {
+    name: "Reddit",
+    icon: SiReddit,
+    baseUrl: "https://www.reddit.com/user/"
+  },
+  {
+    name: "Steam",
+    icon: SiSteam,
+    baseUrl: "https://steamcommunity.com/id/"
+  },
+  {
+    name: "Duolingo",
+    icon: SiDuolingo,
+    baseUrl: "https://www.duolingo.com/profile/"
+  },
 ];
 
 export function hexToRgba(hex: string, alpha: number) {

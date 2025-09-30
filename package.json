@@ -9,7 +9,9 @@
     "predev": "convex dev --until-success && convex dashboard",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"No tests specified\" && exit 0"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.25.0",

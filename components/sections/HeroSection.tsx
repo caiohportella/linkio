@@ -7,7 +7,6 @@ import { Unauthenticated } from "convex/react";
 // import { useState } from "react";
 // import { CustomAuthModal } from "../CustomAuthModal";
 import { SignInButton } from "@clerk/nextjs";
-import Image from "next/image";
 
 export function HeroSection() {
   // const [showModal, setShowModal] = useState(false);

@@ -7,6 +7,7 @@ import { Unauthenticated } from "convex/react";
 // import { useState } from "react";
 // import { CustomAuthModal } from "../CustomAuthModal";
 import { SignInButton } from "@clerk/nextjs";
+import Image from "next/image";
 
 export function HeroSection() {
   // const [showModal, setShowModal] = useState(false);
@@ -14,21 +15,11 @@ export function HeroSection() {
   return (
     <>
       <motion.section
-        className="z-10 max-w-2xl space-y-6 text-center pt-36"
+        className="z-10 max-w-2xl space-y-6 text-center pt-40"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        {/* Logo Placeholder */}
-        <motion.div
-          className="mx-auto h-16 w-16 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold shadow-lg"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          L
-        </motion.div>
-
         <h1 className="text-3xl md:text-7xl font-bold leading-tight text-foreground">
           All that you are, in one link
         </h1>

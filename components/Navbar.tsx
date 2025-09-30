@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Authenticated } from "convex/react";
 import { UserButton } from "@clerk/nextjs";
 import { Plus } from "lucide-react";
+import Image from "next/image";
 
 export default function Navbar() {
   const router = useRouter();
@@ -23,15 +24,15 @@ export default function Navbar() {
 
         {/* Center (Logo) */}
         <motion.div
-          className="text-2xl font-bold text-foreground cursor-pointer"
+          className="text-2xl font-bold text-foreground cursor-pointer flex items-center"
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           onClick={() => router.push("/")}
         >
+          <Image src="/logo.png" alt="Logo" width={50} height={50} />
           Linkio
         </motion.div>
-
 
         {/* Right (User avatar) */}
         <Authenticated>

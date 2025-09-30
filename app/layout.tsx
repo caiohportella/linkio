@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Linkio",
   description: "All that you are, in one link.",
   icons: {
-    icon: "/convex.svg",
+    icon: "/favicon.ico",
   },
 };
 

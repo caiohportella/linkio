@@ -11,7 +11,7 @@ import {
   SiLetterboxd,
   SiGoodreads,
 } from "react-icons/si";
-import { RiTwitterXFill } from "react-icons/ri";
+import { RiTwitterXFill, RiThreadsFill } from "react-icons/ri";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -128,6 +128,11 @@ export const SUPPORTED_SOCIALS = [
     icon: SiGoodreads,
     baseUrl: "https://www.goodreads.com/user/show/",
   },
+  {
+    name: "Threads",
+    icon: RiThreadsFill,
+    baseUrl: "https://www.threads.com/@"
+  }
 ];
 
 export function hexToRgba(hex: string, alpha: number) {

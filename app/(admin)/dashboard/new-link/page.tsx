@@ -1,4 +1,3 @@
-import CreateFolderForm from "@/components/forms/CreateFolderForm";
 import CreateLinkForm from "@/components/forms/CreateLinkForm";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";

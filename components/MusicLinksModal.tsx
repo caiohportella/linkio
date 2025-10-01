@@ -12,7 +12,6 @@ import { Input } from "./ui/input";
 import { SUPPORTED_MUSIC_PLATFORMS } from "@/lib/utils";
 import { toast } from "sonner";
 import { Trash2, Plus, Loader2 } from "lucide-react";
-import { createElement } from "react";
 import { MusicLinkItem } from "@/lib/utils";
 
 interface MusicLinksModalProps {
@@ -469,9 +468,9 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
               const Icon = music.icon;
               const brandColor = music.brandColor || "#000000";
 
-              let buttonBgColor = brandColor;
-              let buttonTextColor = "white";
-              let buttonBorderColor = brandColor;
+              const buttonBgColor = brandColor;
+              const buttonTextColor = "white";
+              const buttonBorderColor = brandColor;
 
               return (
                 <Button
@@ -500,10 +499,7 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
                     }
                   }}
                 >
-                  <Icon
-                    className={`w-5 h-5`}
-                    style={{ color: buttonTextColor }}
-                  />
+                  <Icon className="w-5 h-5" style={{ color: buttonTextColor }} />
                   <span
                     className="font-medium"
                     style={{ color: buttonTextColor }}
@@ -519,8 +515,7 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
             <div className="flex items-center gap-2 mb-4">
               {selectedPlatform?.icon && (
                 <span className="flex items-center justify-center">
-                  {/* @ts-ignore */}
-                  {createElement(selectedPlatform.icon, { className: "w-5 h-5" })}
+                  {React.createElement(selectedPlatform.icon, { className: "w-5 h-5" })}
                 </span>
               )}
               <span className="text-lg font-semibold">
@@ -560,8 +555,7 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
             <div className="flex items-center gap-2">
               {selectedPlatform?.icon && (
                 <span className="flex items-center justify-center">
-                  {/* @ts-ignore */}
-                  {createElement(selectedPlatform.icon, { className: "w-5 h-5" })}
+                  {React.createElement(selectedPlatform.icon, { className: "w-5 h-5" })}
                 </span>
               )}
               <span className="text-lg font-semibold">

@@ -18,7 +18,7 @@ import {
   SiVsco,
 } from "react-icons/si";
 import { RiTwitterXFill, RiThreadsFill } from "react-icons/ri";
-import { FaDeezer, FaAmazon, FaApple, FaMusic } from "react-icons/fa";
+import { FaDeezer, FaAmazon, FaApple } from "react-icons/fa";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

@@ -3,7 +3,7 @@
 import { Doc } from "@/convex/_generated/dataModel";
 import { SUPPORTED_MUSIC_PLATFORMS } from "@/lib/utils";
 import Image from "next/image";
-import { createElement, useState } from "react";
+import { ComponentType, createElement, useState } from "react";
 import { ArrowUpRight, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import { trackLinkClick } from "@/lib/analytics";
@@ -63,10 +63,13 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
           <p className="text-sm italic text-slate-500 truncate">{artistName}</p>
           {firstMusicLink && (
             <div className="flex items-center text-xs text-slate-400 mt-1">
-              {SUPPORTED_MUSIC_PLATFORMS.find(p => p.name === firstMusicLink.platform)?.icon && (
+              {SUPPORTED_MUSIC_PLATFORMS.find((p) => p.name === firstMusicLink.platform)?.icon && (
                 <span className="mr-1">
-                  {/* @ts-ignore */}
-                  {createElement(SUPPORTED_MUSIC_PLATFORMS.find(p => p.name === firstMusicLink.platform)?.icon, { className: "w-3 h-3" })}
+                  {createElement(
+                    (SUPPORTED_MUSIC_PLATFORMS.find((p) => p.name === firstMusicLink.platform)?.icon as ComponentType<{ className?: string }> | undefined) ??
+                      (() => null),
+                    { className: "w-3 h-3" },
+                  )}
                 </span>
               )}
               {firstMusicLink.platform}
@@ -104,8 +107,9 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
                 <div className="flex items-center">
                   {Icon && (
                     <span className="mr-3" style={{ color: brandColor }}>
-                      {/* @ts-ignore */}
-                      {createElement(Icon, { className: "w-5 h-5" })}
+                      {createElement((Icon as ComponentType<{ className?: string }> | undefined) ?? (() => null), {
+                        className: "w-5 h-5",
+                      })}
                     </span>
                   )}
                   <span className="font-medium text-slate-800">{musicLink.platform}</span>

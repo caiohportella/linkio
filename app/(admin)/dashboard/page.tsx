@@ -3,7 +3,6 @@ import CustomizationForm from "@/components/forms/CustomizationForm";
 import UsernameForm from "@/components/forms/UsernameForm";
 import ManageLinks from "@/components/ManageLinks";
 import { ManageFolders } from "@/components/ManageFolders"; // Import ManageFolders
-import CreateFolderForm from "@/components/forms/CreateFolderForm"; // Import CreateFolderForm
 import { api } from "@/convex/_generated/api";
 import { fetchAnalytics } from "@/lib/analytics";
 import { currentUser } from "@clerk/nextjs/server";

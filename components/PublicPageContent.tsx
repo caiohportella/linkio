@@ -24,7 +24,6 @@ const PublicPageContent = ({
   preloadedFolders,
 }: PublicPageContentProps) => {
   const customizations = usePreloadedQuery(preloadedCustomizations);
-  const folders = usePreloadedQuery(preloadedFolders); // Unwrap preloaded folders
   const accentColor = customizations?.accentColor || "#082f08";
 
   return (

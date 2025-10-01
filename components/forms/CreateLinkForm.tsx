@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { useState, useTransition } from "react";
 import { Button } from "../ui/button";
-import { Loader2, Plus, Disc, Music, Trash2, TvMinimalPlayIcon, Clock } from "lucide-react";
+import { Loader2, Plus, Music, Trash2, TvMinimalPlayIcon, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -331,7 +331,7 @@ const CreateLinkForm = () => {
                   <div className="flex flex-col gap-3">
                     {musicLinks.map((link, index) => {
                       const platform = SUPPORTED_MUSIC_PLATFORMS.find(
-                        (p: { name: string; icon: any; brandColor: string; linkTypes: any[] }) => p.name === link.platform,
+                        (p) => p.name === link.platform,
                       );
                       const Icon = platform?.icon;
                       return (

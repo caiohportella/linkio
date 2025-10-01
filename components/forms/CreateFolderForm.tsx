@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
-import { Loader2, Folder, Plus, Save } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import {
   Form,
   FormControl,

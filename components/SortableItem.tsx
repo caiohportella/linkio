@@ -115,11 +115,6 @@ const SortableItem = ({
     setIsEditing(false);
   };
 
-  const handleSetMusicLinks = (newLinks: MusicLinkItem[]) => {
-    setMusicLinks(newLinks);
-    toast.success("Music links updated!");
-  };
-
   const handleRemoveMusicLink = (platformName: string) => {
     const updatedLinks = musicLinks.filter((musicLink) => musicLink.platform !== platformName);
     setMusicLinks(updatedLinks);
@@ -500,8 +495,8 @@ const SortableItem = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete link?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The link "{link.title}" will be
-              permanently removed.
+              This action cannot be undone. The link &quot;{link.title}&quot; will
+              be permanently removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

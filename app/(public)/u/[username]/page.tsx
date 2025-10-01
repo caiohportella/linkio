@@ -5,6 +5,7 @@ import { Metadata } from "next";
 import { ConvexHttpClient } from "convex/browser";
 import { CustomizationsWithUrl } from "@/convex/lib/userCustomizations";
 import { getBaseUrl } from "@/lib/utils";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata({
   params,
@@ -61,6 +62,14 @@ const PublicLinkInBioPage = async ({
   const { username } = await params;
   const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
+  const userId = await client.query(api.lib.usernames.getUserIdBySlug, {
+    slug: username,
+  });
+
+  if (!userId) {
+    notFound();
+  }
+
   const [preloadedLinks, preloadedCustomizations, preloadedFolders] = await Promise.all([
     preloadQuery(api.lib.links.getLinksBySlug, {
       slug: username,
@@ -68,19 +77,9 @@ const PublicLinkInBioPage = async ({
     preloadQuery(api.lib.userCustomizations.getCustomizationsBySlug, {
       slug: username,
     }),
-    (async () => {
-      const userId = await client.query(api.lib.usernames.getUserIdBySlug, {
-        slug: username,
-      });
-
-      if (!userId) {
-        // Handle case where username doesn't exist or no associated userId
-        return null; // Or throw an error, depending on desired behavior
-      }
-      return preloadQuery(api.lib.folders.getFoldersByUserId, {
-        userId: userId,
-      });
-    })(),
+    preloadQuery(api.lib.folders.getFoldersByUserId, {
+      userId,
+    }),
   ]);
 
   return (

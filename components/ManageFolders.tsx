@@ -81,7 +81,6 @@ export const ManageFolders = ({
   }, [activeFolderId, links]);
 
   const updateLinkOrder = useMutation(api.lib.links.updateLinkOrder); // Use existing updateLinkOrder for links
-  const updateFolder = useMutation(api.lib.folders.updateFolder);
   const deleteFolder = useMutation(api.lib.folders.deleteFolder);
 
   const sensors = useSensors(
@@ -108,10 +107,6 @@ export const ManageFolders = ({
       });
     }
   };
-
-  const folderMap = useMemo(() => {
-    return Object.fromEntries(folders.map((folder) => [folder._id, folder]));
-  }, [folders]);
 
   const linkMap = useMemo(() => {
     return Object.fromEntries(links.map((link) => [link._id, link]));

@@ -1,12 +1,7 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
-import {
-  Preloaded,
-  useMutation,
-  usePreloadedQuery,
-  useQuery,
-} from "convex/react";
+import { Preloaded, useMutation, usePreloadedQuery } from "convex/react";
 import { useMemo, useState } from "react";
 
 import {
@@ -27,11 +22,9 @@ import {
 } from "@dnd-kit/sortable";
 import { Button } from "./ui/button";
 import Link from "next/link";
-import { FolderPlusIcon, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import SortableItem from "./SortableItem";
 import { Doc, Id } from "@/convex/_generated/dataModel";
-import FolderCreationModal from "./FolderCreationModal";
-import { useRouter } from "next/navigation";
 
 interface ManageLinksProps {
   preloadedLinks: Preloaded<typeof api.lib.links.getLinksByUserId>;

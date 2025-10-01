@@ -14,14 +14,17 @@ interface PublicPageContentProps {
   preloadedCustomizations: Preloaded<
     typeof api.lib.userCustomizations.getCustomizationsBySlug
   >;
+  preloadedFolders: Preloaded<typeof api.lib.folders.getFoldersByUserId>; // New prop for preloaded folders
 }
 
 const PublicPageContent = ({
   username,
   preloadedLinks,
   preloadedCustomizations,
+  preloadedFolders,
 }: PublicPageContentProps) => {
   const customizations = usePreloadedQuery(preloadedCustomizations);
+  const folders = usePreloadedQuery(preloadedFolders); // Unwrap preloaded folders
   const accentColor = customizations?.accentColor || "#082f08";
 
   return (
@@ -112,7 +115,7 @@ const PublicPageContent = ({
               className="bg-white/90 backdrop-blur-xl rounded-3xl p-8 lg:p-10 shadow-xl border-[1px]"
               style={{ borderColor: accentColor }}
             >
-              <Links preloadedLinks={preloadedLinks} />
+              <Links preloadedLinks={preloadedLinks} preloadedFolders={preloadedFolders} />
             </div>
           </div>
         </div>

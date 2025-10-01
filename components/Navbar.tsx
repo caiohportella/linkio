@@ -20,8 +20,13 @@ export default function Navbar() {
       transition={{ duration: 0.6 }}
     >
       <div className="relative flex items-center justify-center w-full h-full">
-        {/* Left (alignment) */}
-        <div className="absolute left-6 top-1/2 -translate-y-1/2" />
+        {/* Left controls (mobile) */}
+        <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2 md:hidden">
+          <Authenticated>
+            <UserButton afterSignOutUrl="/" />
+          </Authenticated>
+          <ThemeToggle />
+        </div>
 
         {/* Center (Logo) */}
         <motion.div
@@ -53,8 +58,10 @@ export default function Navbar() {
               </div>
             </Button>
 
-            <ThemeToggle />
-            <UserButton />
+            <div className="hidden md:flex items-center gap-2">
+              <ThemeToggle />
+              <UserButton />
+            </div>
           </motion.div>
         </Authenticated>
       </div>

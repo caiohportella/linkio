@@ -10,12 +10,15 @@ import {
   SiSpotify,
   SiLetterboxd,
   SiGoodreads,
+  SiTidal,
   SiTvtime,
   SiReddit,
   SiSteam,
   SiDuolingo,
+  SiVsco,
 } from "react-icons/si";
 import { RiTwitterXFill, RiThreadsFill } from "react-icons/ri";
+import { FaDeezer, FaAmazon, FaApple, FaMusic } from "react-icons/fa";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -172,6 +175,164 @@ export const SUPPORTED_SOCIALS = [
     baseUrl: "https://www.duolingo.com/profile/",
     brandColor: "#58CC02",
   },
+  {
+    name: "VSCO",
+    icon: SiVsco,
+    baseUrl: "https://vsco.co/",
+    brandColor: "#000000",
+  },
+];
+
+export const SUPPORTED_MUSIC_PLATFORMS = [
+  {
+    name: "Spotify",
+    icon: SiSpotify,
+    brandColor: "#1ED760",
+    linkTypes: [
+      {
+        type: "track",
+        label: "Track Link",
+        placeholder: "e.g., 3Fuqn0M6R7z8hBvB22K1jR",
+        urlPattern:
+          /^https?:\/\/open\.spotify\.com\/track\/[a-zA-Z0-9]+(?=\?|$)/,
+        baseUrl: "https://open.spotify.com/track/",
+      },
+      {
+        type: "album",
+        label: "Album Link",
+        placeholder: "e.g., 4aawyAB9vmqN3uQ7FjRGTy",
+        urlPattern:
+          /^https?:\/\/open\.spotify\.com\/album\/[a-zA-Z0-9]+(?=\?|$)/,
+        baseUrl: "https://open.spotify.com/album/",
+      },
+      {
+        type: "playlist",
+        label: "Playlist Link",
+        placeholder: "e.g., 37i9dQZF1DXcBWIGoYBM5M",
+        urlPattern:
+          /^https?:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]+(?=\?|$)/,
+        baseUrl: "https://open.spotify.com/playlist/",
+      },
+    ],
+  },
+  {
+    name: "Apple Music",
+    icon: FaApple,
+    brandColor: "#FC3C44",
+    linkTypes: [
+      {
+        type: "track",
+        label: "Track Link",
+        placeholder: "e.g., 1440843428?i=1440843433",
+        urlPattern:
+          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/album\/[^/]+\/\d+\?i=\d+/,
+        baseUrl: "https://music.apple.com/br/album/",
+      },
+      {
+        type: "album",
+        label: "Album Link",
+        placeholder: "e.g., 1440843428",
+        urlPattern:
+          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/album\/[^/]+\/\d+/,
+        baseUrl: "https://music.apple.com/br/album/",
+      },
+      {
+        type: "playlist",
+        label: "Playlist Link",
+        placeholder: "e.g., pl.u-Ldbq5Zru2d9",
+        urlPattern:
+          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/playlist\/[^/]+\/pl\.u-[a-zA-Z0-9]+/,
+        baseUrl: "https://music.apple.com/br/playlist/",
+      },
+    ],
+  },
+  {
+    name: "Deezer",
+    icon: FaDeezer,
+    brandColor: "#A53DFF",
+    linkTypes: [
+      {
+        type: "track",
+        label: "Track Link",
+        placeholder: "e.g., 123456789",
+        urlPattern: /^https?:\/\/(www\.)?deezer\.com\/track\/\d+/,
+        baseUrl: "https://www.deezer.com/track/",
+      },
+      {
+        type: "album",
+        label: "Album Link",
+        placeholder: "e.g., 987654321",
+        urlPattern: /^https?:\/\/(www\.)?deezer\.com\/album\/\d+/,
+        baseUrl: "https://www.deezer.com/album/",
+      },
+      {
+        type: "playlist",
+        label: "Playlist Link",
+        placeholder: "e.g., 543219876",
+        urlPattern: /^https?:\/\/(www\.)?deezer\.com\/playlist\/\d+/,
+        baseUrl: "https://www.deezer.com/playlist/",
+      },
+    ],
+  },
+  {
+    name: "Tidal",
+    icon: SiTidal,
+    brandColor: "#000000",
+    linkTypes: [
+      {
+        type: "track",
+        label: "Track Link",
+        placeholder: "e.g., 123456789",
+        urlPattern: /^https?:\/\/(www\.)?tidal\.com\/browse\/track\/\d+/,
+        baseUrl: "https://tidal.com/browse/track/",
+      },
+      {
+        type: "album",
+        label: "Album Link",
+        placeholder: "e.g., 987654321",
+        urlPattern: /^https?:\/\/(www\.)?tidal\.com\/browse\/album\/\d+/,
+        baseUrl: "https://tidal.com/browse/album/",
+      },
+      {
+        type: "playlist",
+        label: "Playlist Link",
+        placeholder: "e.g., 543219876",
+        urlPattern: /^https?:\/\/(www\.)?tidal\.com\/browse\/playlist\/\d+/,
+        baseUrl: "https://tidal.com/browse/playlist/",
+      },
+    ],
+  },
+  {
+    name: "Amazon Music",
+    icon: FaAmazon,
+    brandColor: "#7EDDE6",
+    linkTypes: [
+      {
+        type: "track",
+        label: "Track Link",
+        placeholder: "e.g., B08Z2Y2G3X",
+        urlPattern:
+          /^https?:\/\/(music\.amazon\.com|www\.amazon\.[a-z]{2,3})\/albums\/[a-zA-Z0-9]+\/B0[a-zA-Z0-9]+(?:\?|$)/,
+        baseUrl: "https://music.amazon.com/albums/",
+      },
+      {
+        type: "album",
+        label: "Album Link",
+        placeholder: "e.g., B08Z2Y2G3X",
+        urlPattern:
+          /^https?:\/\/(music\.amazon\.com|www\.amazon\.[a-z]{2,3})\/albums\/B0[a-zA-Z0-9]+(?:\?|$)/,
+        baseUrl: "https://music.amazon.com/albums/",
+      },
+      {
+        type: "playlist",
+        label: "Playlist Link",
+        placeholder: "e.g., 37i9dQZF1DXcBWIGoYBM5M",
+        urlPattern:
+          /^https?:\/\/(music\.amazon\.com|www\.amazon\.[a-z]{2,3})\/playlists\/[a-zA-Z0-9]+(?:\?|$)/,
+        baseUrl: "https://music.amazon.com/playlists/",
+      },
+    ],
+  },
 ];
 
 export function hexToRgba(hex: string, alpha: number) {
@@ -180,3 +341,20 @@ export function hexToRgba(hex: string, alpha: number) {
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+export type MusicLinkItem = {
+  platform: string;
+  url: string;
+  type: string;
+  musicTrackTitle?: string;
+  musicArtistName?: string;
+  musicAlbumArtUrl?: string;
+};
+
+export type MediaPreview = {
+  platform: "youtube";
+  url: string;
+  videoId: string;
+  title: string;
+  thumbnailUrl: string;
+};

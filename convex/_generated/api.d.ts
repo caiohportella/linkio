@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as client from "../client.js";
+import type * as lib_folders from "../lib/folders.js";
 import type * as lib_links from "../lib/links.js";
 import type * as lib_userCustomizations from "../lib/userCustomizations.js";
 import type * as lib_usernames from "../lib/usernames.js";
@@ -28,6 +29,7 @@ import type * as lib_usernames from "../lib/usernames.js";
  */
 declare const fullApi: ApiFromModules<{
   client: typeof client;
+  "lib/folders": typeof lib_folders;
   "lib/links": typeof lib_links;
   "lib/userCustomizations": typeof lib_userCustomizations;
   "lib/usernames": typeof lib_usernames;

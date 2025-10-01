@@ -2,6 +2,8 @@ import DashboardMetrics from "@/components/DashboardMetrics";
 import CustomizationForm from "@/components/forms/CustomizationForm";
 import UsernameForm from "@/components/forms/UsernameForm";
 import ManageLinks from "@/components/ManageLinks";
+import { ManageFolders } from "@/components/ManageFolders"; // Import ManageFolders
+import CreateFolderForm from "@/components/forms/CreateFolderForm"; // Import CreateFolderForm
 import { api } from "@/convex/_generated/api";
 import { fetchAnalytics } from "@/lib/analytics";
 import { currentUser } from "@clerk/nextjs/server";
@@ -14,9 +16,14 @@ const DashboardPage = async () => {
     userId: user!.id,
   });
 
-  const analytics = await fetchAnalytics(user!.id);
+  const preloadedFolders = await preloadQuery(
+    api.lib.folders.getFoldersByUserId,
+    {
+      userId: user!.id,
+    },
+  );
 
-  console.log(analytics);
+  const analytics = await fetchAnalytics(user!.id);
 
   return (
     <div>
@@ -71,7 +78,9 @@ const DashboardPage = async () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 bg-purple-500 rounded-full" />
-                      <span className="text-muted-foreground">Realtime updates</span>
+                      <span className="text-muted-foreground">
+                        Realtime updates
+                      </span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 bg-green-500 rounded-full" />
@@ -85,7 +94,7 @@ const DashboardPage = async () => {
 
               {/* Right Side - Link Management */}
               <div className="lg:w-3/5">
-                <div className="dark:bg-card backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-xl gray-200/50">
+                <div className="dark:bg-card backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-xl gray-200/50 mb-8">
                   <div className="mb-6">
                     <h2 className="text-xl font-semibold text-foreground mb-2">
                       Your Links
@@ -96,6 +105,21 @@ const DashboardPage = async () => {
                   </div>
 
                   <ManageLinks preloadedLinks={preloadedLinks} />
+                </div>
+                <div className="dark:bg-card backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-xl gray-200/50">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-foreground mb-2">
+                      Your Folders
+                    </h2>
+                    <p className="text-muted-foreground">
+                      See how you can organize your links into folders and reorder them
+                    </p>
+                  </div>
+
+                  <ManageFolders
+                    preloadedFolders={preloadedFolders}
+                    preloadedLinks={preloadedLinks}
+                  />
                 </div>
               </div>
             </div>

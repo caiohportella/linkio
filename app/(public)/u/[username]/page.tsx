@@ -59,14 +59,28 @@ const PublicLinkInBioPage = async ({
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }> | undefined;
 }) => {
   const { username } = await params;
+  const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
-  const [preloadedLinks, preloadedCustomizations] = await Promise.all([
+  const [preloadedLinks, preloadedCustomizations, preloadedFolders] = await Promise.all([
     preloadQuery(api.lib.links.getLinksBySlug, {
       slug: username,
     }),
     preloadQuery(api.lib.userCustomizations.getCustomizationsBySlug, {
       slug: username,
     }),
+    (async () => {
+      const userId = await client.query(api.lib.usernames.getUserIdBySlug, {
+        slug: username,
+      });
+
+      if (!userId) {
+        // Handle case where username doesn't exist or no associated userId
+        return null; // Or throw an error, depending on desired behavior
+      }
+      return preloadQuery(api.lib.folders.getFoldersByUserId, {
+        userId: userId,
+      });
+    })(),
   ]);
 
   return (
@@ -74,6 +88,7 @@ const PublicLinkInBioPage = async ({
       username={username}
       preloadedLinks={preloadedLinks}
       preloadedCustomizations={preloadedCustomizations}
+      preloadedFolders={preloadedFolders} // Pass preloadedFolders to PublicPageContent
     />
   );
 };

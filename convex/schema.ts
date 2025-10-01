@@ -14,9 +14,35 @@ export default defineSchema({
     title: v.string(),
     url: v.string(),
     order: v.number(),
+    musicLinks: v.optional(
+      v.array(
+        v.object({
+          platform: v.string(),
+          url: v.string(),
+          type: v.string(), // New field to store the type of music link (e.g., 'track', 'album', 'playlist')
+          musicTrackTitle: v.optional(v.string()),
+          musicArtistName: v.optional(v.string()),
+          musicAlbumArtUrl: v.optional(v.string()),
+        }),
+      ),
+    ),
+    musicTrackTitle: v.optional(v.string()), // New field for music track title
+    musicArtistName: v.optional(v.string()), // New field for music artist name
+    musicAlbumArtUrl: v.optional(v.string()), // New field for music album art URL
+    mediaPreview: v.optional(
+      v.object({
+        platform: v.string(),
+        url: v.string(),
+        videoId: v.string(),
+        title: v.string(),
+        thumbnailUrl: v.string(),
+      }),
+    ),
+    folderId: v.optional(v.id("folders")), // New field to associate links with folders
   })
     .index("by_user", ["userId"])
-    .index("by_user_and_order", ["userId", "order"]),
+    .index("by_user_and_order", ["userId", "order"])
+    .index("by_folderId", ["folderId"]),
 
   userCustomizations: defineTable({
     userId: v.string(),
@@ -32,4 +58,10 @@ export default defineSchema({
       ),
     ),
   }).index("by_user_id", ["userId"]),
+
+  folders: defineTable({
+    userId: v.string(),
+    name: v.string(),
+    position: v.number(), // For ordering folders
+  }).index("by_userId", ["userId"]),
 });

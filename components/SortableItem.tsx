@@ -11,6 +11,8 @@ import {
   Save,
   Trash2,
   Clock,
+  Folder,
+  Music,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
@@ -18,7 +20,13 @@ import { useEffect, useState, useTransition } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Image from "next/image";
 import { MediaPreview, MusicLinkItem, formatDateTime } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -61,7 +69,7 @@ const SortableItem = ({
   folderNameMap,
   folders,
 }: SortableItemProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition } =
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id });
 
   const router = useRouter();
@@ -70,17 +78,74 @@ const SortableItem = ({
   const [isUpdating, startUpdating] = useTransition();
   const [editTitle, setEditTitle] = useState(link.title);
   const [editUrl, setEditUrl] = useState(link.url);
-  const [editFolderId, setEditFolderId] = useState<Id<"folders"> | undefined>(link.folderId); // New state for folderId
-  const [musicLinks, setMusicLinks] = useState<MusicLinkItem[]>(link.musicLinks ?? []);
+  const [editFolderId, setEditFolderId] = useState<Id<"folders"> | undefined>(
+    link.folderId,
+  ); // New state for folderId
+  const [musicLinks, setMusicLinks] = useState<MusicLinkItem[]>(
+    link.musicLinks ?? [],
+  );
   const [mediaPreview, setMediaPreview] = useState<MediaPreview | null>(
     sanitizeMediaPreview(link.mediaPreview),
   );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [scheduledAt, setScheduledAt] = useState<number | null>(link.scheduledAt ?? null);
+  const [scheduledAt, setScheduledAt] = useState<number | null>(
+    link.scheduledAt ?? null,
+  );
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [scheduleCleared, setScheduleCleared] = useState(false);
   const isScheduleActive = !!scheduledAt || isScheduleModalOpen;
-  const isScheduleInFuture = link.scheduledAt ? link.scheduledAt > Date.now() : false;
+  const isScheduleInFuture = link.scheduledAt
+    ? link.scheduledAt > Date.now()
+    : false;
+
+  // Mobile long-press to drag functionality
+  const [isLongPressing, setIsLongPressing] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Only on mobile (screen width < 640px)
+    if (window.innerWidth >= 640) return;
+    
+    const timer = setTimeout(() => {
+      setIsLongPressing(true);
+      // Trigger drag start by dispatching a pointer event
+      const touch = e.touches[0];
+      const pointerEvent = new PointerEvent('pointerdown', {
+        pointerId: 1,
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        isPrimary: true,
+      });
+      e.currentTarget.dispatchEvent(pointerEvent);
+    }, 500); // 500ms long press
+    
+    setLongPressTimer(timer);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+    setIsLongPressing(false);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Cancel long press if user moves too much
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+      }
+    };
+  }, [longPressTimer]);
 
   const updateLink = useMutation(api.lib.links.updateLink);
   const deleteLink = useMutation(api.lib.links.deleteLink);
@@ -116,7 +181,9 @@ const SortableItem = ({
   };
 
   const handleRemoveMusicLink = (platformName: string) => {
-    const updatedLinks = musicLinks.filter((musicLink) => musicLink.platform !== platformName);
+    const updatedLinks = musicLinks.filter(
+      (musicLink) => musicLink.platform !== platformName,
+    );
     setMusicLinks(updatedLinks);
     toast.success(`${platformName} music link removed!`);
   };
@@ -163,7 +230,10 @@ const SortableItem = ({
           musicArtistName: musicLinks?.[0]?.musicArtistName,
           musicAlbumArtUrl: musicLinks?.[0]?.musicAlbumArtUrl,
           mediaPreview: mediaPreview || undefined,
-          scheduledAt: scheduleCleared || scheduledAt === null ? undefined : scheduledAt ?? undefined,
+          scheduledAt:
+            scheduleCleared || scheduledAt === null
+              ? undefined
+              : (scheduledAt ?? undefined),
           clearSchedule: scheduleCleared ? true : undefined,
         });
 
@@ -185,11 +255,7 @@ const SortableItem = ({
   const folderName = link.folderId ? folderNameMap?.[link.folderId] : "";
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="p-4 border border-border rounded-2xl bg-input shadow-sm hover:shadow-md transition-shadow"
-    >
+    <div ref={setNodeRef} style={style}>
       {isEditing ? (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -230,7 +296,9 @@ const SortableItem = ({
 
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-foreground">Music Links</span>
+              <span className="text-sm font-medium text-foreground">
+                Music Links
+              </span>
             </div>
             {musicLinks.length === 0 ? (
               <p className="text-xs text-muted-foreground">
@@ -245,7 +313,8 @@ const SortableItem = ({
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground truncate">
-                        {musicLink.musicTrackTitle || `${musicLink.platform} (${musicLink.type})`}
+                        {musicLink.musicTrackTitle ||
+                          `${musicLink.platform} (${musicLink.type})`}
                       </p>
                       {musicLink.musicArtistName && (
                         <p className="text-xs text-muted-foreground truncate">
@@ -270,7 +339,9 @@ const SortableItem = ({
 
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-foreground">Media Preview</span>
+              <span className="text-sm font-medium text-foreground">
+                Media Preview
+              </span>
             </div>
             {mediaPreview ? (
               <div className="rounded-2xl border border-border p-4 flex items-center gap-4">
@@ -283,8 +354,12 @@ const SortableItem = ({
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{mediaPreview.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">{mediaPreview.url}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {mediaPreview.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {mediaPreview.url}
+                  </p>
                 </div>
                 <Button
                   type="button"
@@ -305,13 +380,17 @@ const SortableItem = ({
 
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-foreground">Schedule</span>
+              <span className="text-sm font-medium text-foreground">
+                Schedule
+              </span>
             </div>
             {scheduledAt ? (
               <div className="rounded-2xl border border-border p-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Scheduled</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      Scheduled
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {formatDateTime(scheduledAt)}
                     </p>
@@ -338,7 +417,8 @@ const SortableItem = ({
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  The link will be visible on your public page at the scheduled time.
+                  The link will be visible on your public page at the scheduled
+                  time.
                 </p>
               </div>
             ) : (
@@ -368,7 +448,11 @@ const SortableItem = ({
               Folder
             </label>
             <Select
-              onValueChange={(value: Id<"folders"> | "no-folder") => setEditFolderId(value === "no-folder" ? undefined : value as Id<"folders">)}
+              onValueChange={(value: Id<"folders"> | "no-folder") =>
+                setEditFolderId(
+                  value === "no-folder" ? undefined : (value as Id<"folders">),
+                )
+              }
               value={editFolderId || "no-folder"}
             >
               <SelectTrigger className="w-full rounded-2xl border border-border p-2 text-foreground shadow-sm focus:border-primary focus:outline-none">
@@ -416,68 +500,190 @@ const SortableItem = ({
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-3">
-          {/* Drag Handle */}
-          <div
-            {...attributes}
-            {...listeners}
-            aria-describedby={`link=${id}`}
-            className="cursor-move hover:bg-muted rounded flex-shrink-0"
-          >
-            <GripVertical className="w-4 h-4 text-muted-foreground" />
+        <div 
+            className={`bg-card border border-border rounded-2xl p-4 shadow-sm transition-all duration-300 ease-out ${
+              isLongPressing 
+                ? 'scale-101 shadow-lg border-primary ring-2 ring-primary/20' 
+                : isDragging 
+                  ? 'scale-102 shadow-xl border-primary ring-4 ring-primary/30 rotate-1' 
+                  : ''
+            }`}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchMove={handleTouchMove}
+        >
+          {/* Desktop Layout */}
+          <div className="hidden sm:flex items-center gap-3">
+            {/* Drag Handle */}
+            <div
+              {...attributes}
+              {...listeners}
+              aria-describedby={`link=${id}`}
+              className="cursor-move rounded flex-shrink-0 p-1 -m-1 hover:bg-muted transition-colors duration-200"
+            >
+              <GripVertical className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors duration-200" />
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0 pr-3">
+              <h3 className="font-semibold text-lg text-foreground truncate cursor-default">
+                {link.title}
+              </h3>
+              <div className="space-y-1">
+                {folderName && (
+                  <p className="text-muted-foreground text-sm flex items-center gap-2">
+                    <Folder className="w-3 h-3" />
+                    {folderName}
+                  </p>
+                )}
+                {link.musicTrackTitle && (
+                  <p className="text-muted-foreground text-sm flex items-center gap-2">
+                    <Music className="w-3 h-3" />
+                    {link.musicArtistName ? `${link.musicArtistName} • ` : ""}
+                    {link.musicTrackTitle}
+                  </p>
+                )}
+                <p className="text-muted-foreground text-sm truncate">
+                  {link.url}
+                </p>
+              </div>
+              {isScheduleInFuture && link.scheduledAt && (
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  Scheduled for {formatDateTime(link.scheduledAt)}
+                </p>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {/* Analytics Button */}
+              <Button
+                variant={"outline"}
+                size="icon"
+                className="cursor-pointer h-8 w-8"
+                asChild
+              >
+                <Link href={`/dashboard/link/${id}`}>
+                  <BarChart3 className="w-3.5 h-3.5 text-primary" />
+                </Link>
+              </Button>
+
+              {/* Edit Button */}
+              <Button
+                variant={"outline"}
+                size={"icon"}
+                className="cursor-pointer h-8 w-8"
+                onClick={() => {
+                  setIsEditing(true);
+                }}
+              >
+                <Pencil className="w-3.5 h-3.5 text-foreground" />
+              </Button>
+
+              {/* Delete Button */}
+              <Button
+                variant={"outline"}
+                size={"icon"}
+                className="cursor-pointer h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDeleteDialogOpen(true);
+                }}
+              >
+                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+              </Button>
+            </div>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 min-w-0 pr-3">
-            <h3 className="font-semibold text-lg text-foreground truncate cursor-default">
-              {link.title}
-            </h3>
-            <p className="text-muted-foreground text-sm truncate cursor-default">
-              {folderName && <span className="mr-2">Folder: {folderName}</span>}
-              {link.musicTrackTitle && <span className="mr-2">{link.musicArtistName ? `${link.musicArtistName} • ` : ""}{link.musicTrackTitle}</span>}
-              {link.url}
-            </p>
-            {isScheduleInFuture && link.scheduledAt && (
-              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                Scheduled for {formatDateTime(link.scheduledAt)}
+          {/* Mobile Layout */}
+          <div className="sm:hidden space-y-3">
+            {/* Header with title and drag indicator */}
+            <div className="flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-base text-foreground leading-tight">
+                    {link.title}
+                  </h3>
+                  {isLongPressing && (
+                    <div className="flex items-center gap-1 text-xs text-primary animate-pulse">
+                      <GripVertical className="w-3 h-3 animate-bounce" />
+                      <span>Drag to reorder</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Content details */}
+            <div className="space-y-1">
+              {folderName && (
+                <p className="text-muted-foreground text-sm flex items-center gap-2">
+                  <Folder className="w-3 h-3" />
+                  {folderName}
+                </p>
+              )}
+              {link.musicTrackTitle && (
+                <p className="text-muted-foreground text-sm flex items-center gap-2">
+                  <Music className="w-3 h-3" />
+                  {link.musicArtistName ? `${link.musicArtistName} • ` : ""}
+                  {link.musicTrackTitle}
+                </p>
+              )}
+              <p className="text-muted-foreground text-sm truncate">
+                {link.url}
               </p>
-            )}
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {/* Analytics Button */}
-            <Button variant={"outline"} size="icon" className="cursor-pointer h-8 w-8" asChild>
-              <Link href={`/dashboard/link/${id}`}>
-                <BarChart3 className="w-3.5 h-3.5 text-primary" />
-              </Link>
-            </Button>
+              {isScheduleInFuture && link.scheduledAt && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  <span>Scheduled for {formatDateTime(link.scheduledAt)}</span>
+                </div>
+              )}
+            </div>
 
-            {/* Edit Button */}
-            <Button
-              variant={"outline"}
-              size={"icon"}
-              className="cursor-pointer h-8 w-8"
-              onClick={() => {
-                setIsEditing(true);
-              }}
-            >
-              <Pencil className="w-3.5 h-3.5 text-foreground" />
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2 pt-2">
+              {/* Analytics Button */}
+              <Button
+                variant={"outline"}
+                size="sm"
+                className="cursor-pointer"
+                asChild
+              >
+                <Link
+                  href={`/dashboard/link/${id}`}
+                  className="flex items-center gap-1"
+                >
+                  <BarChart3 className="w-3.5 h-3.5 text-primary" />
+                </Link>
+              </Button>
 
-            {/* Delete Button */}
-            <Button
-              variant={"outline"}
-              size={"icon"}
-              className="cursor-pointer h-8 w-8"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsDeleteDialogOpen(true);
-              }}
-            >
-              <Trash2 className="w-3.5 h-3.5 text-destructive" />
-            </Button>
+              {/* Edit Button */}
+              <Button
+                variant={"outline"}
+                size="sm"
+                className="cursor-pointer"
+                onClick={() => {
+                  setIsEditing(true);
+                }}
+              >
+                <Pencil className="w-3.5 h-3.5 text-foreground" />
+              </Button>
+
+              {/* Delete Button */}
+              <Button
+                variant={"outline"}
+                size="sm"
+                className="cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDeleteDialogOpen(true);
+                }}
+              >
+                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -495,8 +701,8 @@ const SortableItem = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete link?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The link &quot;{link.title}&quot; will
-              be permanently removed.
+              This action cannot be undone. The link &quot;{link.title}&quot;
+              will be permanently removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

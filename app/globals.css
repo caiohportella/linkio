@@ -1,6 +1,19 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Custom scale utilities for drag animations */
+@layer utilities {
+  .scale-102 {
+    transform: scale(1.02);
+  }
+  .scale-105 {
+    transform: scale(1.05);
+  }
+  .scale-110 {
+    transform: scale(1.10);
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

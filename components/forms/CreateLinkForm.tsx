@@ -266,46 +266,51 @@ const CreateLinkForm = () => {
           name="url"
           render={({ field }) => (
             <FormItem>
-              <div className="flex items-center gap-2">
-                <FormLabel className="text-foreground">URL</FormLabel>
-
-                {/* Music Link Badge */}
-                <Badge
-                  variant="secondary"
-                  onClick={() => !mediaPreview && setIsMusicModalOpen(true)}
-                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                    mediaPreview
-                      ? "bg-muted text-muted-foreground cursor-not-allowed"
-                      : "cursor-pointer bg-accent/20 hover:bg-accent/30"
-                  }`}
-                >
-                  <Music className="w-4 h-4" />
-                  <span>Music Link</span>
-                </Badge>
-                <Badge
-                  variant="secondary"
-                  onClick={() => musicLinks.length === 0 && setIsMediaModalOpen(true)}
-                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                    musicLinks.length > 0
-                      ? "bg-muted text-muted-foreground cursor-not-allowed"
-                      : "cursor-pointer bg-accent/20 hover:bg-accent/30"
-                  }`}
-                >
-                  <TvMinimalPlayIcon className="w-4 h-4" />
-                  <span>Video Preview</span>
-                </Badge>
-                <Badge
-                  variant="secondary"
-                  onClick={() => setIsScheduleModalOpen(true)}
-                  className={`cursor-pointer flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                    isScheduleActive
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-accent/20 hover:bg-accent/30 text-foreground"
-                  }`}
-                >
-                  <Clock className="w-4 h-4" />
-                  <span>Schedule</span>
-                </Badge>
+              <div className="space-y-3">
+                {/* Desktop: Horizontal layout, Mobile: Vertical layout */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <FormLabel className="text-foreground">URL</FormLabel>
+                  
+                  {/* Link Type Buttons */}
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant="secondary"
+                      onClick={() => !mediaPreview && setIsMusicModalOpen(true)}
+                      className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        mediaPreview
+                          ? "bg-muted text-muted-foreground cursor-not-allowed"
+                          : "cursor-pointer bg-accent/20 hover:bg-accent/30"
+                      }`}
+                    >
+                      <Music className="w-4 h-4" />
+                      <span>Music Link</span>
+                    </Badge>
+                    <Badge
+                      variant="secondary"
+                      onClick={() => musicLinks.length === 0 && setIsMediaModalOpen(true)}
+                      className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        musicLinks.length > 0
+                          ? "bg-muted text-muted-foreground cursor-not-allowed"
+                          : "cursor-pointer bg-accent/20 hover:bg-accent/30"
+                      }`}
+                    >
+                      <TvMinimalPlayIcon className="w-4 h-4" />
+                      <span>Video Preview</span>
+                    </Badge>
+                    <Badge
+                      variant="secondary"
+                      onClick={() => setIsScheduleModalOpen(true)}
+                      className={`cursor-pointer flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        isScheduleActive
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                          : "bg-accent/20 hover:bg-accent/30 text-foreground"
+                      }`}
+                    >
+                      <Clock className="w-4 h-4" />
+                      <span>Schedule</span>
+                    </Badge>
+                  </div>
+                </div>
               </div>
 
               {mediaPreview ? (

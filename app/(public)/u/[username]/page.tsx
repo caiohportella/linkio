@@ -22,7 +22,7 @@ export async function generateMetadata({
   );
 
   const title = username
-    ? `${username}'s Linkio`
+    ? `${username}'s Linkio | Personal Profile`
     : "Linkio Profile";
   const description = preloadedCustomizationsData?.description || "My personalized link-in-bio page.";
   const imageUrl = preloadedCustomizationsData?.profilePictureUrl || "/logo.png"; // Fallback to a default logo
@@ -36,16 +36,19 @@ export async function generateMetadata({
       images: [
         {
           url: imageUrl,
-          width: 800,
-          height: 600,
+          width: 1200,
+          height: 630,
           alt: title,
         },
       ],
       url: `${getBaseUrl()}/u/${username}`,
+      siteName: "Linkio",
       type: "profile",
     },
     twitter: {
       card: "summary_large_image",
+      creator: "Caio H.",
+      site: "Linkio",
       title: title,
       description: description,
       images: [imageUrl],

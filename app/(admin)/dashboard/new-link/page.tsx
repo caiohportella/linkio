@@ -15,9 +15,9 @@ const NewLinkPage = async () => {
         </Link>
       </div>
 
-      <div className="min-h-screen p-4 lg:p-8">
+      <div className="min-h-screen p-2 sm:p-4 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-16 bg-section-background backdrop-blur-sm border-2 border-section-border rounded-2xl p-8 shadow-md">
+          <div className="flex flex-col lg:flex-row lg:items-start gap-4 sm:gap-6 lg:gap-16 bg-section-background backdrop-blur-sm border-2 border-section-border rounded-2xl p-4 sm:p-6 lg:p-8 shadow-md">
             {/* Left Side - Title and Description */}
             <div className="lg:w-2/5 lg:sticky lg:top-8">
               <div className="space-y-6">
@@ -60,7 +60,7 @@ const NewLinkPage = async () => {
 
             {/* Right Side - Form */}
             <div className="lg:w-3/5">
-              <div className="bg-card backdrop-blur-sm border border-border rounded-2xl p-8 shadow-md">
+              <div className="bg-card backdrop-blur-sm border border-border rounded-2xl p-4 sm:p-6 lg:p-8 shadow-md">
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold text-foreground mb-2">
                     Link Details

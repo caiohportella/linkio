@@ -1,18 +1,24 @@
-# Linkio – The Reimagined Link-in-Bio Platform
-
-![Linkio banner](./public/home.png)
-
-> Curate, organize, and schedule every link, media preview, and music drop – all from a single realtime dashboard.
-
-Curate, organize and schedule everything you want to share with others, all in a page made by you, for you.
+<div align="center">
+  <h1>Linkio</h1>
+</div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/-Next_JS-black?style=for-the-badge&logoColor=white&logo=nextdotjs&color=000000" alt="nextdotjs" />
+  <br />
+
+  <img alt="home" src="https://github.com/user-attachments/assets/0dc64693-a317-431b-bedb-1fe7aabd6c3e" />
+
+  <br />
+
+  <div>
+      <img src="https://img.shields.io/badge/-Next_JS-black?style=for-the-badge&logoColor=white&logo=nextdotjs&color=000000" alt="nextdotjs" />
   <img src="https://img.shields.io/badge/-Typescript-black?style=for-the-badge&logoColor=white&logo=typescript&color=3178C6" alt="typescript" />
   <img src="https://img.shields.io/badge/-Tailwind_CSS-black?style=for-the-badge&logoColor=white&logo=tailwindcss&color=06B6D4" alt="tailwindcss" />
   <img src="https://img.shields.io/badge/shadcn%2Fui-000?logo=shadcnui&logoColor=fff&style=for-the-badge" alt="shadcn" />
   <img src="https://img.shields.io/badge/-Convex-black?style=for-the-badge&logoColor=white&logo=convex" alt="convex" />
 <img src="https://img.shields.io/badge/-clerk-k23E?style=for-the-badge&logoColor=777882&logo=clerk&color=000000" alt="clerk" />
+  </div>
+
+  <h3 align="center">Curate, organize and schedule everything you want to share with others, all in a page made by you, for you.</h3>
 </div>
 
 ## ✨ Features

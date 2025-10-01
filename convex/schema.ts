@@ -31,13 +31,14 @@ export default defineSchema({
     musicAlbumArtUrl: v.optional(v.string()), // New field for music album art URL
     mediaPreview: v.optional(
       v.object({
-        platform: v.string(),
+        platform: v.literal("youtube"),
         url: v.string(),
         videoId: v.string(),
         title: v.string(),
         thumbnailUrl: v.string(),
       }),
     ),
+    scheduledAt: v.optional(v.number()),
     folderId: v.optional(v.id("folders")), // New field to associate links with folders
   })
     .index("by_user", ["userId"])

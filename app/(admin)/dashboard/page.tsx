@@ -104,7 +104,10 @@ const DashboardPage = async () => {
                     </p>
                   </div>
 
-                  <ManageLinks preloadedLinks={preloadedLinks} />
+                  <ManageLinks
+                    preloadedLinks={preloadedLinks}
+                    preloadedFolders={preloadedFolders}
+                  />
                 </div>
                 <div className="dark:bg-card backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-xl gray-200/50">
                   <div className="mb-6">

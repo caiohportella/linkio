@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { MediaPreview } from "@/lib/utils";
 
 interface MediaPreviewModalProps {
@@ -56,7 +56,9 @@ const MediaPreviewModal = ({
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        setError(data?.error ?? "Failed to load preview. Please try another URL.");
+        setError(
+          data?.error ?? "Failed to load preview. Please try another URL.",
+        );
         return;
       }
 
@@ -75,9 +77,10 @@ const MediaPreviewModal = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-2xl sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Media Preview</DialogTitle>
+          <DialogTitle>Video Preview</DialogTitle>
           <DialogDescription>
-            Paste a YouTube link to generate a thumbnail preview for this media item.
+            Paste a YouTube link to generate a thumbnail preview for this media
+            item.
           </DialogDescription>
         </DialogHeader>
 
@@ -97,7 +100,7 @@ const MediaPreviewModal = ({
             type="button"
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="rounded-2xl"
+            className="cursor-pointer rounded-2xl"
           >
             Cancel
           </Button>
@@ -105,7 +108,7 @@ const MediaPreviewModal = ({
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="rounded-2xl"
+            className="cursor-pointer rounded-2xl"
           >
             {isSaving ? (
               <>
@@ -113,7 +116,10 @@ const MediaPreviewModal = ({
                 Saving...
               </>
             ) : (
-              "Save Preview"
+              <>
+                <Save className="w-4 h-4" />
+                Save Preview
+              </>
             )}
           </Button>
         </DialogFooter>
@@ -123,4 +129,3 @@ const MediaPreviewModal = ({
 };
 
 export default MediaPreviewModal;
-

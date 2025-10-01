@@ -117,7 +117,7 @@ const LinkAnalytics = async ({ analytics }: LinkAnalyticsProps) => {
 
       {/* No data state */}
       {analytics.dailyData.length === 0 && (
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8 mb-8">
+        <div className="p-4 lg:p-8 mb-8">
           <div className="max-w-7xl mx-auto">
             <div className="bg-section-background backdrop-blur-sm border-2 border-section-border rounded-2xl p-8 shadow-md text-center">
               <div className="text-muted-foreground mb-4">

@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { useState, useTransition } from "react";
 import { Button } from "../ui/button";
-import { Loader2, Plus, Disc, Music, Trash2, TvMinimalPlayIcon } from "lucide-react";
+import { Loader2, Plus, Disc, Music, Trash2, TvMinimalPlayIcon, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -25,13 +25,17 @@ import { Badge } from "../ui/badge";
 import dynamic from "next/dynamic";
 import { createElement } from "react";
 import Image from "next/image";
-import { MediaPreview } from "@/lib/utils";
+import { MediaPreview, formatDateTime } from "@/lib/utils";
 import { SUPPORTED_MUSIC_PLATFORMS, MusicLinkItem } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { useAuth } from "@clerk/nextjs";
 import { Id } from "@/convex/_generated/dataModel";
 
 const MediaPreviewModal = dynamic(() => import("../MediaPreviewModal"), {
+  ssr: false,
+});
+
+const ScheduleLinkModal = dynamic(() => import("../ScheduleLinkModal"), {
   ssr: false,
 });
 
@@ -78,6 +82,7 @@ const formSchema = z
       })
       .nullable()
       .optional(),
+    scheduledAt: z.number().nullable().optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.url && (!data.musicLinks || data.musicLinks.length === 0)) {
@@ -102,6 +107,8 @@ const CreateLinkForm = () => {
   const [isSubmitting, startSubmitting] = useTransition();
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [scheduleCleared, setScheduleCleared] = useState(false);
   
   const router = useRouter();
   const createLink = useMutation(api.lib.links.createLink);
@@ -119,12 +126,15 @@ const CreateLinkForm = () => {
       musicLinks: [], // Initialize musicLinks in form
       editingMusicLink: null, // Initialize editingMusicLink in form
       mediaPreview: null,
+      scheduledAt: null,
     },
   });
 
   const musicLinks = form.watch("musicLinks") || []; // Watch musicLinks from form state with default
   const editingMusicLink = form.watch("editingMusicLink"); // Watch editingMusicLink from form state
   const mediaPreview = sanitizeMediaPreview(form.watch("mediaPreview"));
+  const scheduledAt = form.watch("scheduledAt");
+  const isScheduleActive = !!scheduledAt || isScheduleModalOpen;
 
   const handleSetMusicLinks = (newLinks: MusicLinkItem[]) => {
     form.setValue("musicLinks", newLinks, {
@@ -150,7 +160,7 @@ const CreateLinkForm = () => {
   };
 
   const handleSetMediaPreview = (
-    preview: z.infer<typeof formSchema>["mediaPreview"],
+    preview: MediaPreview | null,
   ) => {
     form.setValue("mediaPreview", preview, {
       shouldDirty: true,
@@ -162,6 +172,14 @@ const CreateLinkForm = () => {
       shouldDirty: true,
       shouldValidate: true,
     });
+  };
+
+  const handleSetScheduledAt = (value: number | null) => {
+    form.setValue("scheduledAt", value, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    setScheduleCleared(value === null);
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -178,6 +196,7 @@ const CreateLinkForm = () => {
           musicAlbumArtUrl: values.musicLinks?.[0]?.musicAlbumArtUrl,
           mediaPreview: values.mediaPreview || undefined,
           folderId: values.folderId as Id<"folders"> | undefined,
+          scheduledAt: scheduleCleared || values.scheduledAt === null ? undefined : values.scheduledAt ?? undefined,
         });
         router.push("/dashboard");
       } catch (err) {
@@ -215,14 +234,14 @@ const CreateLinkForm = () => {
           name="folderId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-foreground">Folder</FormLabel>
+              <FormLabel className="text-foreground">Folder (optional)</FormLabel>
               <Select
                 onValueChange={(value: Id<"folders"> | "no-folder") => field.onChange(value === "no-folder" ? undefined : value)}
                 defaultValue={field.value}
               >
                 <FormControl>
-                  <SelectTrigger className="text-muted-foreground rounded-2xl">
-                    <SelectValue placeholder="Select a folder (optional)" />
+                  <SelectTrigger className="cursor-pointer text-muted-foreground rounded-2xl">
+                    <SelectValue placeholder="Select a folder" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -253,23 +272,45 @@ const CreateLinkForm = () => {
                 {/* Music Link Badge */}
                 <Badge
                   variant="secondary"
-                  onClick={() => setIsMusicModalOpen(true)}
-                  className="cursor-pointer flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-accent/20 hover:bg-accent/30 transition-colors"
+                  onClick={() => !mediaPreview && setIsMusicModalOpen(true)}
+                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    mediaPreview
+                      ? "bg-muted text-muted-foreground cursor-not-allowed"
+                      : "cursor-pointer bg-accent/20 hover:bg-accent/30"
+                  }`}
                 >
                   <Music className="w-4 h-4" />
                   <span>Music Link</span>
                 </Badge>
                 <Badge
                   variant="secondary"
-                  onClick={() => setIsMediaModalOpen(true)}
-                  className="cursor-pointer flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-accent/20 hover:bg-accent/30 transition-colors"
+                  onClick={() => musicLinks.length === 0 && setIsMediaModalOpen(true)}
+                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    musicLinks.length > 0
+                      ? "bg-muted text-muted-foreground cursor-not-allowed"
+                      : "cursor-pointer bg-accent/20 hover:bg-accent/30"
+                  }`}
                 >
                   <TvMinimalPlayIcon className="w-4 h-4" />
-                  <span>Media Preview</span>
+                  <span>Video Preview</span>
+                </Badge>
+                <Badge
+                  variant="secondary"
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  className={`cursor-pointer flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    isScheduleActive
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "bg-accent/20 hover:bg-accent/30 text-foreground"
+                  }`}
+                >
+                  <Clock className="w-4 h-4" />
+                  <span>Schedule</span>
                 </Badge>
               </div>
 
-              {musicLinks.length === 0 ? (
+              {mediaPreview ? (
+                <input type="hidden" {...field} value={mediaPreview.url} />
+              ) : musicLinks.length === 0 ? (
                 <>
                   <FormControl>
                     <Input
@@ -279,15 +320,14 @@ const CreateLinkForm = () => {
                     />
                   </FormControl>
                   <FormDescription>
-                    The destination URL where users will be redirected
+                    The destination URL where users will be redirected.
                   </FormDescription>
                   <FormMessage />
                 </>
-              ) : (
+              ) : null}
+
+              {!mediaPreview && musicLinks.length > 0 && (
                 <div className="space-y-3 mt-2">
-                  <FormDescription>
-                    Music links are added. The main URL field is optional.
-                  </FormDescription>
                   <div className="flex flex-col gap-3">
                     {musicLinks.map((link, index) => {
                       const platform = SUPPORTED_MUSIC_PLATFORMS.find(
@@ -358,11 +398,47 @@ const CreateLinkForm = () => {
               type="button"
               variant="ghost"
               size="icon"
-              className="text-destructive hover:bg-destructive/10 rounded-full"
+              className="cursor-pointer text-destructive hover:bg-destructive/10 rounded-full"
               onClick={() => handleSetMediaPreview(null)}
             >
               <Trash2 className="w-4 h-4" />
             </Button>
+          </div>
+        )}
+
+        {scheduledAt && (
+          <div className="rounded-2xl border border-border p-4 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Scheduled</p>
+                <p className="text-xs text-muted-foreground">
+                  {formatDateTime(scheduledAt)}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="rounded-2xl cursor-pointer"
+                  onClick={() => setIsScheduleModalOpen(true)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="cursor-pointer text-destructive hover:bg-destructive/10 rounded-full"
+                  onClick={() => handleSetScheduledAt(null)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              The link will be visible on your public page at the scheduled time.
+            </p>
           </div>
         )}
 
@@ -411,6 +487,12 @@ const CreateLinkForm = () => {
         onOpenChange={setIsMediaModalOpen}
         onConfirm={handleSetMediaPreview}
         initialValue={mediaPreview || undefined}
+      />
+      <ScheduleLinkModal
+        isOpen={isScheduleModalOpen}
+        onOpenChange={setIsScheduleModalOpen}
+        initialValue={scheduledAt ?? undefined}
+        onConfirm={handleSetScheduledAt}
       />
     </Form>
   );

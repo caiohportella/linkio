@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
-import { Loader2, Folder, Plus } from "lucide-react";
+import { Loader2, Folder, Plus, Save } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -19,6 +19,7 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Id } from "@/convex/_generated/dataModel";
 
 const formSchema = z.object({
   name: z
@@ -29,18 +30,21 @@ const formSchema = z.object({
 
 interface CreateFolderFormProps {
   onFolderCreated?: () => void;
+  folderId?: Id<"folders">;
+  initialName?: string;
 }
 
-const CreateFolderForm = ({ onFolderCreated }: CreateFolderFormProps) => {
+const CreateFolderForm = ({ onFolderCreated, folderId, initialName }: CreateFolderFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, startSubmitting] = useTransition();
   const router = useRouter();
   const createFolder = useMutation(api.lib.folders.createFolder);
+  const updateFolder = useMutation(api.lib.folders.updateFolder);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      name: initialName ?? "",
     },
   });
 
@@ -48,13 +52,18 @@ const CreateFolderForm = ({ onFolderCreated }: CreateFolderFormProps) => {
     setError(null);
     startSubmitting(async () => {
       try {
-        await createFolder({ name: values.name });
-        toast.success("Folder created successfully!");
-        form.reset(); // Clear the form after successful submission
+        if (folderId) {
+          await updateFolder({ folderId, name: values.name });
+          toast.success("Folder updated successfully!");
+        } else {
+          await createFolder({ name: values.name });
+          toast.success("Folder created successfully!");
+        }
+        form.reset();
         if (onFolderCreated) {
           onFolderCreated();
         } else {
-          router.refresh(); // Refresh to show new folder only if not in modal
+          router.refresh();
         }
       } catch (err) {
         setError(
@@ -98,12 +107,12 @@ const CreateFolderForm = ({ onFolderCreated }: CreateFolderFormProps) => {
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Creating Folder...
+                {folderId ? "Updating Folder..." : "Creating Folder..."}
               </>
             ) : (
               <>
-                <Folder className="w-4 h-4 mr-2 animate-pulse" />
-                Create Folder
+                <Save className="w-4 h-4 mr-2 animate-pulse" />
+                {folderId ? "Save Changes" : "Create Folder"}
               </>
             )}
           </Button>

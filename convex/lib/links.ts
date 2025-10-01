@@ -28,13 +28,14 @@ export const getLinksBySlug = query({
       musicAlbumArtUrl: v.optional(v.string()), // Add to return type
       mediaPreview: v.optional(
         v.object({
-          platform: v.string(),
+          platform: v.literal("youtube"),
           url: v.string(),
           videoId: v.string(),
           title: v.string(),
           thumbnailUrl: v.string(),
         }),
       ),
+      scheduledAt: v.optional(v.number()),
       folderId: v.optional(v.id("folders")), // Add to return type
     }),
   ),
@@ -87,13 +88,14 @@ export const getLinksByUserId = query({
       musicAlbumArtUrl: v.optional(v.string()), // Add to return type
       mediaPreview: v.optional(
         v.object({
-          platform: v.string(),
+          platform: v.literal("youtube"),
           url: v.string(),
           videoId: v.string(),
           title: v.string(),
           thumbnailUrl: v.string(),
         }),
       ),
+      scheduledAt: v.optional(v.number()),
       folderId: v.optional(v.id("folders")), // Add to return type
     }),
   ),
@@ -157,13 +159,15 @@ export const updateLink = mutation({
     musicAlbumArtUrl: v.optional(v.string()),
     mediaPreview: v.optional(
       v.object({
-        platform: v.string(),
+        platform: v.literal("youtube"),
         url: v.string(),
         videoId: v.string(),
         title: v.string(),
         thumbnailUrl: v.string(),
       }),
     ),
+    clearSchedule: v.optional(v.boolean()),
+    scheduledAt: v.optional(v.number()),
   },
   returns: v.null(),
   handler: async ({ db, auth }, args) => {
@@ -199,6 +203,14 @@ export const updateLink = mutation({
 
     if (args.mediaPreview !== undefined) {
       updatePayload.mediaPreview = args.mediaPreview || undefined;
+    }
+
+    if (args.scheduledAt !== undefined) {
+      updatePayload.scheduledAt = args.scheduledAt ?? undefined;
+    }
+
+    if (args.clearSchedule) {
+      updatePayload.scheduledAt = undefined;
     }
 
     await db.patch(args.linkId, updatePayload);
@@ -287,13 +299,14 @@ export const getLinksByFolderId = query({
       musicAlbumArtUrl: v.optional(v.string()),
       mediaPreview: v.optional(
         v.object({
-          platform: v.string(),
+          platform: v.literal("youtube"),
           url: v.string(),
           videoId: v.string(),
           title: v.string(),
           thumbnailUrl: v.string(),
         }),
       ),
+      scheduledAt: v.optional(v.number()),
       folderId: v.optional(v.id("folders")),
     }),
   ),
@@ -330,13 +343,14 @@ export const createLink = mutation({
     musicAlbumArtUrl: v.optional(v.string()), // New optional argument
     mediaPreview: v.optional(
       v.object({
-        platform: v.string(),
+        platform: v.literal("youtube"),
         url: v.string(),
         videoId: v.string(),
         title: v.string(),
         thumbnailUrl: v.string(),
       }),
     ),
+    scheduledAt: v.optional(v.number()),
     folderId: v.optional(v.id("folders")), // New optional argument
   },
   returns: v.id("links"),
@@ -355,6 +369,7 @@ export const createLink = mutation({
       musicArtistName: args.musicArtistName || undefined, // Store musicArtistName
       musicAlbumArtUrl: args.musicAlbumArtUrl || undefined, // Store musicAlbumArtUrl
       mediaPreview: args.mediaPreview || undefined,
+      scheduledAt: args.scheduledAt ?? undefined,
       folderId: args.folderId || undefined, // Store folderId
     });
   },

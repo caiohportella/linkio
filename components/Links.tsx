@@ -3,7 +3,7 @@
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { trackLinkClick } from "@/lib/analytics";
-import { usePreloadedQuery, Preloaded } from "convex/react";
+import { usePreloadedQuery, Preloaded, useQuery } from "convex/react";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -30,7 +30,7 @@ interface LinksProps {
 }
 
 const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
-  const links = usePreloadedQuery(preloadedLinks);
+  const preloadedLinksData = usePreloadedQuery(preloadedLinks);
   const folders = usePreloadedQuery(preloadedFolders);
   const params = useParams();
   const username = params.username as string;
@@ -50,7 +50,7 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
       const timer = setTimeout(() => setShowMainContent(true), 300); // Fade in main content after folder content fades out
       return () => clearTimeout(timer);
     }
-  }, [activeFolderId, links]);
+  }, [activeFolderId, preloadedLinksData]);
 
   const handleLinkClick = async (link: Doc<"links">) => {
     await trackLinkClick({
@@ -72,6 +72,12 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
       linkUrl: preview.url,
     });
   };
+
+  const liveLinks = useQuery(api.lib.links.getLinksBySlug, { slug: username });
+  const filteredLiveLinks = (liveLinks ?? preloadedLinksData).filter(
+    (link) => !link.scheduledAt || link.scheduledAt <= Date.now(),
+  );
+  const links = filteredLiveLinks;
 
   if (links.length === 0 && folders.length === 0 && !activeFolderId) {
     return (
@@ -118,7 +124,7 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
       <div
         className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
-          showMainContent ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0",
+          showMainContent ? "opacity-100" : "opacity-0",
         )}
       >
         <div className="space-y-4">
@@ -151,7 +157,7 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                         key={link._id}
                         href={mediaPreview.url}
                         target="_blank"
-                        className="group block w-full"
+                        className="group block w-full cursor-pointer"
                         onClick={() => handleMediaPreviewClick(link, mediaPreview)}
                       >
                         <div className="relative bg-white/70 hover:bg-white/90 border border-slate-200/50 hover:border-slate-300/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5">
@@ -190,7 +196,7 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                         key={link._id}
                         href={link.url}
                         target="_blank"
-                        className="group block w-full"
+                        className="group block w-full cursor-pointer"
                         onClick={() => handleLinkClick(link)}
                       >
                         <div className="relative bg-white/70 hover:bg-white/90 border border-slate-200/50 hover:border-slate-300/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5">
@@ -226,9 +232,7 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
       <div
         className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
-          showFolderContent
-            ? "max-h-[1000px] opacity-100"
-            : "max-h-0 opacity-0",
+          showFolderContent ? "opacity-100" : "opacity-0",
         )}
       >
         {activeFolderId && (
@@ -242,7 +246,7 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                       key={link._id}
                       href={mediaPreview.url}
                       target="_blank"
-                      className="group block w-full"
+                      className="group block w-full cursor-pointer"
                       onClick={() => handleMediaPreviewClick(link, mediaPreview)}
                     >
                       <div className="relative bg-white/70 hover:bg-white/90 border border-slate-200/50 hover:border-slate-300/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5">
@@ -273,41 +277,41 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                     </Link>
                   );
                 }
-                if (link.musicLinks && link.musicLinks.length > 0) {
-                  return <MusicCard key={link._id} link={link} />;
-                } else {
-                  return (
-                    <Link
-                      key={link._id}
-                      href={link.url}
-                      target="_blank"
-                      className="group block w-full"
-                      onClick={() => handleLinkClick(link)}
-                    >
-                      <div className="relative bg-white/70 hover:bg-white/90 border border-slate-200/50 hover:border-slate-300/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5">
-                        {/* Hover Gradient */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-purple-50/0 to-blue-50/0 group-hover:from-blue-50/30 group-hover:via-purple-50/20 group-hover:to-blue-50/30 rounded-2xl transition-all duration-300"></div>
+        if (link.musicLinks && link.musicLinks.length > 0) {
+          return <MusicCard key={link._id} link={link} />;
+        } else {
+          return (
+            <Link
+              key={link._id}
+              href={link.url}
+              target="_blank"
+                      className="group block w-full cursor-pointer"
+              onClick={() => handleLinkClick(link)}
+            >
+              <div className="relative bg-white/70 hover:bg-white/90 border border-slate-200/50 hover:border-slate-300/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5">
+                {/* Hover Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-purple-50/0 to-blue-50/0 group-hover:from-blue-50/30 group-hover:via-purple-50/20 group-hover:to-blue-50/30 rounded-2xl transition-all duration-300"></div>
 
-                        <div className="relative p-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-lg font-bold text-slate-900 group-hover:text-slate-800 transition-colors duration-200 mb-1">
-                                {link.title}
-                              </h3>
-                              <p className="text-xs italic text-slate-400 group-hover:text-slate-500 transition-colors duration-200 truncate font-normal">
-                                {link.url.replace(/^https?:\/\//, "")}
-                              </p>
-                            </div>
-                            <div className="ml-4 text-slate-400 group-hover:text-slate-600 transition-all duration-200 group-hover:translate-x-0.5">
-                              <ArrowUpRight className="w-5 h-5" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                }
-              })}
+                <div className="relative p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-bold text-slate-900 group-hover:text-slate-800 transition-colors duration-200 mb-1">
+                        {link.title}
+                      </h3>
+                      <p className="text-xs italic text-slate-400 group-hover:text-slate-500 transition-colors duration-200 truncate font-normal">
+                        {link.url.replace(/^https?:\/\//, "")}
+                      </p>
+                    </div>
+                    <div className="ml-4 text-slate-400 group-hover:text-slate-600 transition-all duration-200 group-hover:translate-x-0.5">
+                      <ArrowUpRight className="w-5 h-5" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          );
+        }
+      })}
             </div>
           </div>
         )}

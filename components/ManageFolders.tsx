@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import {
-  useMutation,
-  usePreloadedQuery,
-  Preloaded,
-} from "convex/react"; // Import Preloaded and usePreloadedQuery
+import { useMutation, usePreloadedQuery, Preloaded } from "convex/react"; // Import Preloaded and usePreloadedQuery
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel"; // Import Doc for links
 import {
@@ -24,7 +20,18 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import SortableItem from "./SortableItem";
-import { ChevronLeft, Folder, ArrowUpRight } from "lucide-react";
+import { ChevronLeft, Folder, ArrowUpRight, Edit, Trash2 } from "lucide-react";
+import FolderCreationModal from "./FolderCreationModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 interface ManageFoldersProps {
@@ -32,24 +39,39 @@ interface ManageFoldersProps {
   preloadedLinks: Preloaded<typeof api.lib.links.getLinksByUserId>;
 }
 
-export const ManageFolders = ({ preloadedFolders, preloadedLinks }: ManageFoldersProps) => {
-  const folders = usePreloadedQuery(preloadedFolders); 
-  const links = usePreloadedQuery(preloadedLinks); 
-  
+export const ManageFolders = ({
+  preloadedFolders,
+  preloadedLinks,
+}: ManageFoldersProps) => {
+  const folders = usePreloadedQuery(preloadedFolders);
+  const links = usePreloadedQuery(preloadedLinks);
+
   // States for folder navigation and animation
-  const [activeFolderId, setActiveFolderId] = useState<Id<"folders"> | null>(null);
+  const [activeFolderId, setActiveFolderId] = useState<Id<"folders"> | null>(
+    null,
+  );
   const [showMainContent, setShowMainContent] = useState(true);
   const [showFolderContent, setShowFolderContent] = useState(false);
 
   // State for reordering links within an active folder
   const [folderLinkItems, setFolderLinkItems] = useState<Id<"links">[]>([]);
+  const [editingFolder, setEditingFolder] = useState<Doc<"folders"> | null>(
+    null,
+  );
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [folderPendingDelete, setFolderPendingDelete] =
+    useState<Doc<"folders"> | null>(null);
 
   // Effect to manage animations and folderLinkItems when activeFolderId or links change
   useEffect(() => {
     if (activeFolderId) {
       setShowMainContent(false); // Start fading out main content
       const timer = setTimeout(() => setShowFolderContent(true), 300); // Fade in folder content after main content fades out
-      setFolderLinkItems(links.filter(link => link.folderId === activeFolderId).map(link => link._id));
+      setFolderLinkItems(
+        links
+          .filter((link) => link.folderId === activeFolderId)
+          .map((link) => link._id),
+      );
       return () => clearTimeout(timer);
     } else {
       setShowFolderContent(false); // Start fading out folder content
@@ -59,6 +81,8 @@ export const ManageFolders = ({ preloadedFolders, preloadedLinks }: ManageFolder
   }, [activeFolderId, links]);
 
   const updateLinkOrder = useMutation(api.lib.links.updateLinkOrder); // Use existing updateLinkOrder for links
+  const updateFolder = useMutation(api.lib.folders.updateFolder);
+  const deleteFolder = useMutation(api.lib.folders.deleteFolder);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -68,7 +92,8 @@ export const ManageFolders = ({ preloadedFolders, preloadedLinks }: ManageFolder
   );
 
   // handleDragEnd for link reordering within a folder
-  const handleDragEnd = async (event: DragEndEvent) => { // Renamed from handleLinkDragEnd
+  const handleDragEnd = async (event: DragEndEvent) => {
+    // Renamed from handleLinkDragEnd
     const { active, over } = event;
 
     if (active.id !== over?.id) {
@@ -120,30 +145,49 @@ export const ManageFolders = ({ preloadedFolders, preloadedLinks }: ManageFolder
       <div
         className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
-          showMainContent ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+          showMainContent ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0",
         )}
       >
         <div className="space-y-4">
           {/* Render Folders as clickable buttons */}
-          {!activeFolderId && folders.map((folder) => (
-            <button
-              key={folder._id}
-              onClick={() => setActiveFolderId(folder._id)}
-              className="cursor-pointer flex items-center justify-between w-full p-4 bg-input border-input hover:border-slate-300/50 rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5"
-            >
-              <div className="flex items-center gap-3">
-                <Folder className="w-5 h-5 text-slate-600" />
-                <h3 className="text-lg font-bold text-text">
-                  {folder.name}
-                </h3>
+          {!activeFolderId &&
+            folders.map((folder) => (
+              <div
+                key={folder._id}
+                className="flex items-center justify-between w-full p-4 bg-input border-input hover:border-slate-300/50 rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5"
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveFolderId(folder._id)}
+                  className="cursor-pointer flex items-center gap-3"
+                >
+                  <Folder className="hidden md:block w-5 h-5 text-slate-600" />
+                  <h3 className="text-lg font-bold text-text">{folder.name}</h3>
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingFolder(folder);
+                      setIsEditModalOpen(true);
+                    }}
+                    className="cursor-pointer rounded-full p-2 text-sm text-muted-foreground"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFolderPendingDelete(folder);
+                    }}
+                    className="cursor-pointer rounded-full p-2 text-sm text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <ArrowUpRight className="w-5 h-5 text-text transition-transform duration-200" />
+                </div>
               </div>
-              <ArrowUpRight
-                className="w-5 h-5 text-text transition-transform duration-200"
-              />
-            </button>
-          ))}
-
-
+            ))}
         </div>
       </div>
 
@@ -151,7 +195,9 @@ export const ManageFolders = ({ preloadedFolders, preloadedLinks }: ManageFolder
       <div
         className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
-          showFolderContent ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+          showFolderContent
+            ? "max-h-[1000px] opacity-100"
+            : "max-h-0 opacity-0",
         )}
       >
         {activeFolderId && (
@@ -183,6 +229,53 @@ export const ManageFolders = ({ preloadedFolders, preloadedLinks }: ManageFolder
           </DndContext>
         )}
       </div>
+      <FolderCreationModal
+        open={isEditModalOpen}
+        onOpenChange={(open) => {
+          setIsEditModalOpen(open);
+          if (!open) setEditingFolder(null);
+        }}
+        folderId={editingFolder?._id}
+        initialName={editingFolder?.name ?? ""}
+        title="Rename Folder"
+      />
+      <AlertDialog
+        open={!!folderPendingDelete}
+        onOpenChange={(open) => {
+          if (!open) setFolderPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete folder?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {folderPendingDelete
+                ? (() => {
+                    const count = links.filter(
+                      (link) => link.folderId === folderPendingDelete._id,
+                    ).length;
+                    return `${count === 1 ? "1 link" : `${count} links`} are inside this folder. They will remain accessible but will move out of the folder.`;
+                  })()
+                : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer rounded-2xl">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!folderPendingDelete) return;
+                deleteFolder({ folderId: folderPendingDelete._id });
+                setFolderPendingDelete(null);
+              }}
+              className="cursor-pointer rounded-2xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete folder
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

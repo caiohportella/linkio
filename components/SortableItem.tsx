@@ -8,10 +8,9 @@ import {
   GripVertical,
   Loader2,
   Pencil,
-  Plus,
   Save,
   Trash2,
-  TvMinimalPlayIcon,
+  Clock,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
@@ -20,17 +19,20 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import dynamic from "next/dynamic";
 import Image from "next/image";
-import { MediaPreview, MusicLinkItem } from "@/lib/utils";
+import { MediaPreview, MusicLinkItem, formatDateTime } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-
-const MusicLinksModal = dynamic(() => import("./MusicLinksModal"), {
-  ssr: false,
-});
-const MediaPreviewModal = dynamic(() => import("./MediaPreviewModal"), {
-  ssr: false,
-});
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import dynamic from "next/dynamic";
 
 const sanitizeMediaPreview = (
   value: Doc<"links">["mediaPreview"] | undefined,
@@ -41,6 +43,10 @@ const sanitizeMediaPreview = (
   }
   return null;
 };
+
+const ScheduleLinkModal = dynamic(() => import("./ScheduleLinkModal"), {
+  ssr: false,
+});
 
 interface SortableItemProps {
   id: Id<"links">;
@@ -66,12 +72,15 @@ const SortableItem = ({
   const [editUrl, setEditUrl] = useState(link.url);
   const [editFolderId, setEditFolderId] = useState<Id<"folders"> | undefined>(link.folderId); // New state for folderId
   const [musicLinks, setMusicLinks] = useState<MusicLinkItem[]>(link.musicLinks ?? []);
-  const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
-  const [editingMusicLink, setEditingMusicLink] = useState<MusicLinkItem | null>(null);
   const [mediaPreview, setMediaPreview] = useState<MediaPreview | null>(
     sanitizeMediaPreview(link.mediaPreview),
   );
-  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState<number | null>(link.scheduledAt ?? null);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [scheduleCleared, setScheduleCleared] = useState(false);
+  const isScheduleActive = !!scheduledAt || isScheduleModalOpen;
+  const isScheduleInFuture = link.scheduledAt ? link.scheduledAt > Date.now() : false;
 
   const updateLink = useMutation(api.lib.links.updateLink);
   const deleteLink = useMutation(api.lib.links.deleteLink);
@@ -89,6 +98,8 @@ const SortableItem = ({
       setEditUrl(link.url);
       setEditFolderId(link.folderId);
       setMediaPreview(sanitizeMediaPreview(link.mediaPreview));
+      setScheduledAt(link.scheduledAt ?? null);
+      setScheduleCleared(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [link.musicLinks, link.title, link.url, link.folderId]);
@@ -98,16 +109,15 @@ const SortableItem = ({
     setEditUrl(link.url);
     setEditFolderId(link.folderId);
     setMusicLinks(link.musicLinks ?? []);
-    setEditingMusicLink(null);
     setMediaPreview(sanitizeMediaPreview(link.mediaPreview));
+    setScheduledAt(link.scheduledAt ?? null);
+    setScheduleCleared(false);
     setIsEditing(false);
   };
 
   const handleSetMusicLinks = (newLinks: MusicLinkItem[]) => {
     setMusicLinks(newLinks);
-    if (newLinks.length > 0) {
-      setEditUrl(newLinks[0].url);
-    }
+    toast.success("Music links updated!");
   };
 
   const handleRemoveMusicLink = (platformName: string) => {
@@ -116,15 +126,16 @@ const SortableItem = ({
     toast.success(`${platformName} music link removed!`);
   };
 
-  const handleSetEditingMusicLink = (value: MusicLinkItem | null) => {
-    setEditingMusicLink(value);
+  const handleClearMediaPreview = () => {
+    setMediaPreview(null);
+    if (!musicLinks.length) {
+      setEditUrl(link.url);
+    }
   };
 
-  const handleSetMediaPreview = (preview: MediaPreview | null) => {
-    setMediaPreview(preview);
-    if (preview?.url) {
-      setEditUrl(preview.url);
-    }
+  const handleSetScheduledAt = (value: number | null) => {
+    setScheduledAt(value);
+    setScheduleCleared(value === null);
   };
 
   const handleSave = async () => {
@@ -157,11 +168,14 @@ const SortableItem = ({
           musicArtistName: musicLinks?.[0]?.musicArtistName,
           musicAlbumArtUrl: musicLinks?.[0]?.musicAlbumArtUrl,
           mediaPreview: mediaPreview || undefined,
+          scheduledAt: scheduleCleared || scheduledAt === null ? undefined : scheduledAt ?? undefined,
+          clearSchedule: scheduleCleared ? true : undefined,
         });
 
         setIsEditing(false);
-        setEditingMusicLink(null);
         setMediaPreview(mediaPreview ?? null);
+        setScheduledAt(scheduledAt ?? null);
+        setScheduleCleared(false);
         router.refresh();
         toast.success("Link updated successfully!");
       } catch (err) {
@@ -206,13 +220,17 @@ const SortableItem = ({
             >
               URL
             </label>
-            <input
-              id="url"
-              value={editUrl}
-              onChange={(e) => setEditUrl(e.target.value)}
-              className="w-full rounded-2xl border border-border p-2 text-foreground shadow-sm focus:border-primary focus:outline-none"
-              placeholder="Enter URL"
-            />
+            {mediaPreview ? (
+              <input id="url" type="hidden" value={mediaPreview.url} />
+            ) : (
+              <input
+                id="url"
+                value={editUrl}
+                onChange={(e) => setEditUrl(e.target.value)}
+                className="w-full rounded-2xl border border-border p-2 text-foreground shadow-sm focus:border-primary focus:outline-none"
+                placeholder="Enter URL"
+              />
+            )}
           </div>
 
           <div className="space-y-3">
@@ -221,7 +239,7 @@ const SortableItem = ({
             </div>
             {musicLinks.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                Add music streaming sources for this link.
+                No music sources currently linked.
               </p>
             ) : (
               <div className="flex flex-col gap-3">
@@ -230,19 +248,16 @@ const SortableItem = ({
                     key={`${musicLink.platform}-${musicLink.type}`}
                     className="flex items-center justify-between rounded-2xl border border-border bg-card p-3"
                   >
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => {
-                        handleSetEditingMusicLink(musicLink);
-                        setIsMusicModalOpen(true);
-                      }}
-                      className="flex-1 justify-start cursor-pointer px-0 py-0 h-auto rounded-2xl"
-                    >
-                      <span className="font-medium text-foreground">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground truncate">
                         {musicLink.musicTrackTitle || `${musicLink.platform} (${musicLink.type})`}
-                      </span>
-                    </Button>
+                      </p>
+                      {musicLink.musicArtistName && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {musicLink.musicArtistName}
+                        </p>
+                      )}
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
@@ -254,19 +269,6 @@ const SortableItem = ({
                     </Button>
                   </div>
                 ))}
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    handleSetEditingMusicLink(null);
-                    setIsMusicModalOpen(true);
-                  }}
-                  className="cursor-pointer rounded-2xl"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Another Source
-                </Button>
               </div>
             )}
           </div>
@@ -294,21 +296,70 @@ const SortableItem = ({
                   variant="ghost"
                   size="icon"
                   className="text-destructive hover:bg-destructive/10 rounded-full"
-                  onClick={() => handleSetMediaPreview(null)}
+                  onClick={handleClearMediaPreview}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No media preview available for this link.
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground">Schedule</span>
+            </div>
+            {scheduledAt ? (
+              <div className="rounded-2xl border border-border p-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Scheduled</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDateTime(scheduledAt)}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="rounded-2xl"
+                      onClick={() => setIsScheduleModalOpen(true)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:bg-destructive/10 rounded-full"
+                      onClick={() => handleSetScheduledAt(null)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  The link will be visible on your public page at the scheduled time.
+                </p>
               </div>
             ) : (
               <Button
                 type="button"
                 variant="secondary"
                 size="sm"
-                onClick={() => setIsMediaModalOpen(true)}
-                className="cursor-pointer rounded-2xl flex items-center gap-2"
+                onClick={() => setIsScheduleModalOpen(true)}
+                className={`rounded-2xl flex items-center gap-2 transition-colors ${
+                  isScheduleActive
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "bg-accent/20 hover:bg-accent/30 text-foreground"
+                }`}
               >
-                <TvMinimalPlayIcon className="w-4 h-4" />
-                Add Media Preview
+                <Clock className="w-4 h-4" />
+                Add Schedule
               </Button>
             )}
           </div>
@@ -391,6 +442,12 @@ const SortableItem = ({
               {link.musicTrackTitle && <span className="mr-2">{link.musicArtistName ? `${link.musicArtistName} • ` : ""}{link.musicTrackTitle}</span>}
               {link.url}
             </p>
+            {isScheduleInFuture && link.scheduledAt && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Scheduled for {formatDateTime(link.scheduledAt)}
+              </p>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -421,14 +478,7 @@ const SortableItem = ({
               className="cursor-pointer h-8 w-8"
               onClick={(e) => {
                 e.stopPropagation();
-
-                const isConfirmed = confirm(
-                  `Are you sure you want to delete ${link.title}?\n\nThis action cannot be undone.`,
-                );
-
-                if (isConfirmed) {
-                  deleteLink({ linkId: id });
-                }
+                setIsDeleteDialogOpen(true);
               }}
             >
               <Trash2 className="w-3.5 h-3.5 text-destructive" />
@@ -436,31 +486,40 @@ const SortableItem = ({
           </div>
         </div>
       )}
-      {isEditing && (
-        <>
-          <MusicLinksModal
-            isOpen={isMusicModalOpen}
-            onOpenChange={(open) => {
-              setIsMusicModalOpen(open);
-              if (!open) {
-                setEditingMusicLink(null);
-              }
-            }}
-            musicLinks={musicLinks}
-            setMusicLinks={handleSetMusicLinks}
-            initialLink={editingMusicLink}
-            onClearInitialLink={() => setEditingMusicLink(null)}
-            handleRemoveMusicLink={handleRemoveMusicLink}
-            showExistingLinksOnOpen={musicLinks.length > 0 && !editingMusicLink}
-          />
-          <MediaPreviewModal
-            isOpen={isMediaModalOpen}
-            onOpenChange={setIsMediaModalOpen}
-            onConfirm={handleSetMediaPreview}
-            initialValue={mediaPreview || undefined}
-          />
-        </>
-      )}
+      <ScheduleLinkModal
+        isOpen={isScheduleModalOpen}
+        onOpenChange={setIsScheduleModalOpen}
+        initialValue={scheduledAt ?? undefined}
+        onConfirm={handleSetScheduledAt}
+      />
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => setIsDeleteDialogOpen(open)}
+      >
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete link?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The link "{link.title}" will be
+              permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer rounded-2xl">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="cursor-pointer rounded-2xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                deleteLink({ linkId: id });
+                setIsDeleteDialogOpen(false);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

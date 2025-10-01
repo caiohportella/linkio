@@ -24,6 +24,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function formatDateTime(timestamp: number, options?: Intl.DateTimeFormatOptions) {
+  const date = new Date(timestamp);
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    ...options,
+  });
+}
+
 export function getBaseUrl() {
   if (typeof window !== "undefined") {
     return window.location.origin;
@@ -225,8 +237,8 @@ export const SUPPORTED_MUSIC_PLATFORMS = [
         label: "Track Link",
         placeholder: "e.g., 1440843428?i=1440843433",
         urlPattern:
-          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/album\/[^/]+\/\d+\?i=\d+/,
-        baseUrl: "https://music.apple.com/br/album/",
+          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/song\/[^/]+\/\d+\?i=\d+/,
+        baseUrl: "https://music.apple.com/br/song/",
       },
       {
         type: "album",
@@ -283,22 +295,22 @@ export const SUPPORTED_MUSIC_PLATFORMS = [
         type: "track",
         label: "Track Link",
         placeholder: "e.g., 123456789",
-        urlPattern: /^https?:\/\/(www\.)?tidal\.com\/browse\/track\/\d+/,
-        baseUrl: "https://tidal.com/browse/track/",
+        urlPattern: /^https?:\/\/(www\.)?tidal\.com\/track\/[A-Za-z0-9]+/,
+        baseUrl: "https://tidal.com/track/",
       },
       {
         type: "album",
         label: "Album Link",
         placeholder: "e.g., 987654321",
-        urlPattern: /^https?:\/\/(www\.)?tidal\.com\/browse\/album\/\d+/,
-        baseUrl: "https://tidal.com/browse/album/",
+        urlPattern: /^https?:\/\/(www\.)?tidal\.com\/album\/[A-Za-z0-9]+(?:\/.*)?/,
+        baseUrl: "https://tidal.com/album/",
       },
       {
         type: "playlist",
         label: "Playlist Link",
         placeholder: "e.g., 543219876",
-        urlPattern: /^https?:\/\/(www\.)?tidal\.com\/browse\/playlist\/\d+/,
-        baseUrl: "https://tidal.com/browse/playlist/",
+        urlPattern: /^https?:\/\/(www\.)?tidal\.com\/playlist\/[A-Za-z0-9]+/,
+        baseUrl: "https://tidal.com/playlist/",
       },
     ],
   },

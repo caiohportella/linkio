@@ -9,11 +9,12 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import MusicCard from "./MusicCard";
 import { ChevronLeft, Folder } from "lucide-react"; // Import ChevronLeft icon and Folder icon
-import { useState, useEffect } from "react"; // Import useState and useEffect
-import { cn, SUPPORTED_MUSIC_PLATFORMS } from "@/lib/utils"; // Import cn for conditional classes
+import { useState } from "react"; // Import useState
+import { SUPPORTED_MUSIC_PLATFORMS } from "@/lib/utils"; // Import SUPPORTED_MUSIC_PLATFORMS
 import Image from "next/image";
 import { MediaPreview } from "@/lib/utils";
 import { createElement, ComponentType } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const sanitizeMediaPreview = (
   value: Doc<"links">["mediaPreview"] | undefined,
@@ -38,20 +39,6 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
   const [activeFolderId, setActiveFolderId] = useState<Id<"folders"> | null>(
     null,
   ); // State to manage active folder
-  const [showMainContent, setShowMainContent] = useState(true); // State for animation of main content
-  const [showFolderContent, setShowFolderContent] = useState(false); // State for animation of folder content
-
-  useEffect(() => {
-    if (activeFolderId) {
-      setShowMainContent(false); // Start fading out main content
-      const timer = setTimeout(() => setShowFolderContent(true), 300); // Fade in folder content after main content fades out
-      return () => clearTimeout(timer);
-    } else {
-      setShowFolderContent(false); // Start fading out folder content
-      const timer = setTimeout(() => setShowMainContent(true), 300); // Fade in main content after folder content fades out
-      return () => clearTimeout(timer);
-    }
-  }, [activeFolderId, preloadedLinksData]);
 
   const handleLinkClick = async (link: Doc<"links">) => {
     await trackLinkClick({
@@ -122,21 +109,32 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
       )}
 
       {/* Main Content (Folders and Un-foldered Links) */}
-      <div
-        className={cn(
-          "overflow-hidden transition-all duration-300 ease-in-out",
-          showMainContent ? "opacity-100" : "opacity-0",
-        )}
-      >
-        <div className="space-y-4">
-          {/* Only show folders and un-foldered links in the main view */}
-          {!activeFolderId && (
+      <AnimatePresence mode="wait">
+        {!activeFolderId && (
+          <motion.div
+            key="main-content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="space-y-4"
+          >
+            {/* Only show folders and un-foldered links in the main view */}
             <>
               {folders.map((folder) => (
-                <button
+                <motion.button
                   key={folder._id}
                   onClick={() => setActiveFolderId(folder._id)}
-                  className="cursor-pointer flex items-center justify-between w-full p-4 bg-white/70 hover:bg-white/90 border border-slate-200/50 hover:border-slate-300/50 rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5"
+                  className="cursor-pointer flex items-center justify-between w-full p-4 bg-white/70 border border-slate-200/50 rounded-2xl"
+                  whileHover={{ 
+                    scale: 1.02, 
+                    y: -2,
+                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                    borderColor: "rgba(148, 163, 184, 0.3)",
+                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 >
                   <div className="flex items-center gap-3">
                     <Folder className="w-5 h-5 text-slate-600" />
@@ -145,7 +143,7 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                     </h3>
                   </div>
                   <ArrowUpRight className="w-5 h-5 text-slate-500 transition-transform duration-200" />
-                </button>
+                </motion.button>
               ))}
 
               {links
@@ -161,7 +159,18 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                         className="group block w-full cursor-pointer"
                         onClick={() => handleMediaPreviewClick(link, mediaPreview)}
                       >
-                        <div className="relative bg-white/70 hover:bg-white/90 border border-slate-200/50 hover:border-slate-300/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5">
+                        <motion.div 
+                          className="relative bg-white/70 border border-slate-200/50 rounded-2xl overflow-hidden"
+                          whileHover={{ 
+                            scale: 1.02, 
+                            y: -2,
+                            backgroundColor: "rgba(255, 255, 255, 0.9)",
+                            borderColor: "rgba(148, 163, 184, 0.3)",
+                            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                          }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        >
                           <div className="relative w-full pb-[56.25%]">
                             <Image
                               src={mediaPreview.thumbnailUrl}
@@ -194,7 +203,7 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                               </div>
                             </div>
                           </div>
-                        </div>
+                        </motion.div>
                       </Link>
                     );
                   }
@@ -209,9 +218,26 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                         className="group block w-full cursor-pointer"
                         onClick={() => handleLinkClick(link)}
                       >
-                        <div className="relative bg-white/70 hover:bg-white/90 border border-slate-200/50 hover:border-slate-300/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5">
+                        <motion.div 
+                          className="relative bg-white/70 border border-slate-200/50 rounded-2xl overflow-hidden"
+                          whileHover={{ 
+                            scale: 1.02, 
+                            y: -2,
+                            backgroundColor: "rgba(255, 255, 255, 0.9)",
+                            borderColor: "rgba(148, 163, 184, 0.3)",
+                            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                          }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        >
                           {/* Hover Gradient */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-purple-50/0 to-blue-50/0 group-hover:from-blue-50/30 group-hover:via-purple-50/20 group-hover:to-blue-50/30 rounded-2xl transition-all duration-300"></div>
+                          <motion.div 
+                            className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-purple-50/0 to-blue-50/0 rounded-2xl"
+                            whileHover={{
+                              background: "linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(59, 130, 246, 0.1))"
+                            }}
+                            transition={{ duration: 0.3 }}
+                          />
 
                           <div className="relative p-6">
                             <div className="flex items-center justify-between">
@@ -228,25 +254,27 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                               </div>
                             </div>
                           </div>
-                        </div>
+                        </motion.div>
                       </Link>
                     );
                   }
                 })}
             </>
-          )}
-        </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Folder Content (Links within active folder) */}
-      <div
-        className={cn(
-          "overflow-hidden transition-all duration-300 ease-in-out",
-          showFolderContent ? "opacity-100" : "opacity-0",
-        )}
-      >
+      <AnimatePresence mode="wait">
         {activeFolderId && (
-          <div className="space-y-4">
+          <motion.div
+            key="folder-content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="space-y-4"
+          >
             <div className="space-y-4">
               {filteredLinks.map((link) => {
                 const mediaPreview = sanitizeMediaPreview(link.mediaPreview);
@@ -259,7 +287,18 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                       className="group block w-full cursor-pointer"
                       onClick={() => handleMediaPreviewClick(link, mediaPreview)}
                     >
-                      <div className="relative bg-white/70 hover:bg-white/90 border border-slate-200/50 hover:border-slate-300/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5">
+                      <motion.div 
+                        className="relative bg-white/70 border border-slate-200/50 rounded-2xl overflow-hidden"
+                        whileHover={{ 
+                          scale: 1.02, 
+                          y: -2,
+                          backgroundColor: "rgba(255, 255, 255, 0.9)",
+                          borderColor: "rgba(148, 163, 184, 0.3)",
+                          boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      >
                         <div className="relative w-full pb-[56.25%]">
                           <Image
                             src={mediaPreview.thumbnailUrl}
@@ -292,7 +331,7 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     </Link>
                   );
                 }
@@ -307,9 +346,26 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                       className="group block w-full cursor-pointer"
               onClick={() => handleLinkClick(link)}
             >
-              <div className="relative bg-white/70 hover:bg-white/90 border border-slate-200/50 hover:border-slate-300/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5">
+              <motion.div 
+                className="relative bg-white/70 border border-slate-200/50 rounded-2xl overflow-hidden"
+                whileHover={{ 
+                  scale: 1.02, 
+                  y: -2,
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  borderColor: "rgba(148, 163, 184, 0.3)",
+                  boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              >
                 {/* Hover Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-purple-50/0 to-blue-50/0 group-hover:from-blue-50/30 group-hover:via-purple-50/20 group-hover:to-blue-50/30 rounded-2xl transition-all duration-300"></div>
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-purple-50/0 to-blue-50/0 rounded-2xl"
+                  whileHover={{
+                    background: "linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(59, 130, 246, 0.1))"
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
 
                 <div className="relative p-6">
                   <div className="flex items-center justify-between">
@@ -326,15 +382,15 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </Link>
           );
         }
       })}
             </div>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 };

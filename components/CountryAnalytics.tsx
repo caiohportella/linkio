@@ -1,5 +1,4 @@
-import { CountryAnalyticsData, ProfileCountryAnalytics } from "@/lib/analytics";
-import { formatUrl } from "@/lib/utils";
+import { ProfileCountryAnalytics } from "@/lib/analytics";
 import {
   Globe,
   MapPin,
@@ -7,7 +6,6 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import Link from "next/link";
 import { MetricCard } from "./MetricCard";
 
 interface CountryAnalyticsProps {
@@ -276,7 +274,7 @@ const CountryAnalytics = ({ analytics }: CountryAnalyticsProps) => {
             </h3>
             
             <div className="grid gap-4">
-              {analytics.countries.map((country, index) => (
+              {analytics.countries.map((country) => (
                 <div
                   key={country.country}
                   className="bg-white/50 hover:bg-white/70 border border-slate-200/50 hover:border-slate-300/50 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5"

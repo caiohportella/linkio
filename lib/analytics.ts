@@ -293,7 +293,14 @@ export async function fetchProfileCountryAnalytics(
       };
     }
 
-    const countries = data.data.map((row: any) => ({
+    const countries = data.data.map((row: {
+      country?: string;
+      total_clicks?: number;
+      unique_users?: number;
+      percentage?: number;
+      top_link_title?: string;
+      top_link_id?: string;
+    }) => ({
       country: row.country || "Unknown",
       totalClicks: row.total_clicks || 0,
       uniqueUsers: row.unique_users || 0,

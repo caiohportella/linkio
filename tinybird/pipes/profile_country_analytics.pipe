@@ -1,0 +1,35 @@
+DESCRIPTION >
+    Get country-level analytics for a profile owner showing top links per country
+
+NODE profile_country_analytics_node
+SQL >
+    %
+    SELECT
+        CASE
+            WHEN location_country != '' THEN location_country
+            ELSE 'Unknown'
+        END as country,
+        count() as total_clicks,
+        uniq(profileUserId) as unique_users,
+        round(count() * 100.0 / sum(count()) OVER (), 2) as percentage,
+        -- Get the most clicked link for each country
+        topK(1)(linkTitle)[1] as top_link_title,
+        topK(1)(linkId)[1] as top_link_id
+    FROM link_clicks
+    WHERE
+        profileUserId = {{String(profileUserId)}}
+        {% if defined(start_date) %}
+        AND toDate(timestamp) >= {{Date(start_date)}}
+        {% else %}
+        AND toDate(timestamp) >= today() - 30
+        {% end %}
+        {% if defined(end_date) %}
+        AND toDate(timestamp) <= {{Date(end_date)}}
+        {% else %}
+        AND toDate(timestamp) <= today()
+        {% end %}
+    GROUP BY country
+    ORDER BY total_clicks DESC
+    LIMIT 20
+
+TYPE endpoint

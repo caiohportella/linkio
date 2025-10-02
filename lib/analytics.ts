@@ -192,7 +192,7 @@ export async function fetchLinkAnalytics(
 
     try {
       const countryRes = await fetch(
-        `${process.env.TINYBIRD_HOST}/v0/pipes/link_analytics.json?profileUserId=${userId}&linkId=${linkId}&days_back=${daysBack}`,
+        `${process.env.TINYBIRD_HOST}/v0/pipes/link_country_analytics.json?profileUserId=${userId}&linkId=${linkId}&days_back=${daysBack}`,
         {
           headers: {
             Authorization: `Bearer ${process.env.TINYBIRD_TOKEN}`,
@@ -232,5 +232,89 @@ export async function fetchLinkAnalytics(
     console.error("Tinybird error", err);
 
     return null;
+  }
+}
+
+export interface CountryAnalyticsData {
+  country: string;
+  totalClicks: number;
+  uniqueUsers: number;
+  percentage: number;
+  topLinkTitle: string;
+  topLinkId: string;
+}
+
+export interface ProfileCountryAnalytics {
+  countries: CountryAnalyticsData[];
+  totalCountries: number;
+  totalClicks: number;
+}
+
+export async function fetchProfileCountryAnalytics(
+  userId: string,
+  daysBack: number = 30,
+): Promise<ProfileCountryAnalytics> {
+  if (!process.env.TINYBIRD_TOKEN || !process.env.TINYBIRD_HOST) {
+    return {
+      countries: [],
+      totalCountries: 0,
+      totalClicks: 0,
+    };
+  }
+
+  try {
+    // Get country-level analytics for the entire profile
+    const countryRes = await fetch(
+      `${process.env.TINYBIRD_HOST}/v0/pipes/profile_country_analytics.json?profileUserId=${userId}&days_back=${daysBack}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.TINYBIRD_TOKEN}`,
+        },
+        next: { revalidate: 0 },
+      },
+    );
+
+    if (!countryRes.ok) {
+      console.error("Failed to fetch country analytics:", await countryRes.text());
+      return {
+        countries: [],
+        totalCountries: 0,
+        totalClicks: 0,
+      };
+    }
+
+    const data = await countryRes.json();
+
+    if (!data.data || data.data.length === 0) {
+      return {
+        countries: [],
+        totalCountries: 0,
+        totalClicks: 0,
+      };
+    }
+
+    const countries = data.data.map((row: any) => ({
+      country: row.country || "Unknown",
+      totalClicks: row.total_clicks || 0,
+      uniqueUsers: row.unique_users || 0,
+      percentage: row.percentage || 0,
+      topLinkTitle: row.top_link_title || "Unknown Link",
+      topLinkId: row.top_link_id || "",
+    }));
+
+    const totalClicks = countries.reduce((sum: number, country: CountryAnalyticsData) => sum + country.totalClicks, 0);
+
+    return {
+      countries,
+      totalCountries: countries.length,
+      totalClicks,
+    };
+  } catch (err) {
+    console.error("Tinybird error:", err);
+    return {
+      countries: [],
+      totalCountries: 0,
+      totalClicks: 0,
+    };
   }
 }

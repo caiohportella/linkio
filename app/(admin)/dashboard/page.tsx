@@ -1,10 +1,11 @@
 import DashboardMetrics from "@/components/DashboardMetrics";
+import CountryAnalytics from "@/components/CountryAnalytics";
 import CustomizationForm from "@/components/forms/CustomizationForm";
 import UsernameForm from "@/components/forms/UsernameForm";
 import ManageLinks from "@/components/ManageLinks";
 import { ManageFolders } from "@/components/ManageFolders"; // Import ManageFolders
 import { api } from "@/convex/_generated/api";
-import { fetchAnalytics } from "@/lib/analytics";
+import { fetchAnalytics, fetchProfileCountryAnalytics } from "@/lib/analytics";
 import { currentUser } from "@clerk/nextjs/server";
 import { preloadQuery } from "convex/nextjs";
 
@@ -23,11 +24,15 @@ const DashboardPage = async () => {
   );
 
   const analytics = await fetchAnalytics(user!.id);
+  const countryAnalytics = await fetchProfileCountryAnalytics(user!.id);
 
   return (
     <div>
       {/* Analytics Metrics */}
       <DashboardMetrics analytics={analytics} />
+
+      {/* Country Analytics */}
+      <CountryAnalytics analytics={countryAnalytics} />
 
       {/* Customize Link URL */}
       <div className="bg-grandient-to-br from-gray-50 to-gray-100 p-4 lg:p-8 mb-8">

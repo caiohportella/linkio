@@ -32,7 +32,7 @@ jobs:
     - name: Setup pnpm cache
       uses: actions/cache@v3
       with:
-        path: ${{ env.STORE_PATH }}
+        path: ~/.local/share/pnpm/store
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
@@ -76,7 +76,7 @@ jobs:
     - name: Setup pnpm cache
       uses: actions/cache@v3
       with:
-        path: ${{ env.STORE_PATH }}
+        path: ~/.local/share/pnpm/store
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
@@ -125,7 +125,7 @@ jobs:
     - name: Setup pnpm cache
       uses: actions/cache@v3
       with:
-        path: ${{ env.STORE_PATH }}
+        path: ~/.local/share/pnpm/store
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-pnpm-store-

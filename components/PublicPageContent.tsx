@@ -2,11 +2,13 @@
 
 import { api } from "@/convex/_generated/api";
 import { Preloaded, usePreloadedQuery } from "convex/react";
-import { User } from "lucide-react";
+import { User, Share } from "lucide-react";
 import Image from "next/image";
 import { getBaseUrl, hexToRgba, SUPPORTED_SOCIALS } from "@/lib/utils";
 import Link from "next/link";
 import Links from "./Links";
+import ShareModal from "./ShareModal";
+import { useState } from "react";
 
 interface PublicPageContentProps {
   username: string;
@@ -25,6 +27,7 @@ const PublicPageContent = ({
 }: PublicPageContentProps) => {
   const customizations = usePreloadedQuery(preloadedCustomizations);
   const accentColor = customizations?.accentColor || "#082f08";
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -36,6 +39,14 @@ const PublicPageContent = ({
         }}
       >
         <div className="absolute inset-0 bg-black-10"></div>
+        {/* Mobile Share Icon */}
+        <button
+          onClick={() => setIsShareModalOpen(true)}
+          className="lg:hidden absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
+          title="Share profile"
+        >
+          <Share className="cursor-pointer w-4 h-4 text-white" />
+        </button>
       </div>
 
       <div className="relative -mt-24 max-w-4xl mx-auto px-6 pb-16">
@@ -66,9 +77,20 @@ const PublicPageContent = ({
 
               {/* Profile Info */}
               <div className="space-y-3">
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-                  @{username}
-                </h1>
+                <div className="relative">
+                  {/* Desktop Share Icon */}
+                  <button
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="cursor-pointer hidden lg:flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors absolute right-0 top-0"
+                    title="Share profile"
+                  >
+                    <Share className="w-4 h-4 text-gray-600" />
+                  </button>
+                  {/* Username - centered on mobile, left-aligned on desktop */}
+                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 text-center lg:text-left">
+                    @{username}
+                  </h1>
+                </div>
                 {customizations?.description && (
                   <p className="text-gray-700 text-base leading-relaxed max-w-md mx-auto lg:mx-0">
                     {customizations.description}
@@ -133,6 +155,15 @@ const PublicPageContent = ({
           </p>
         </div>
       </div>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        username={username}
+        profilePictureUrl={customizations?.profilePictureUrl}
+        accentColor={accentColor}
+      />
     </div>
   );
 };

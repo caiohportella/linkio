@@ -194,10 +194,6 @@ const SortableItem = ({
     setEditUrl(primaryUrl);
   };
 
-  const handleSetEditingMusicLink = (link: MusicLinkItem | null) => {
-    setEditingMusicLink(link);
-  };
-
   const handleClearMediaPreview = () => {
     setMediaPreview(null);
     if (!musicLinks.length) {

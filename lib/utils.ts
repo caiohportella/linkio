@@ -348,6 +348,20 @@ export const SUPPORTED_MUSIC_PLATFORMS = [
       },
     ],
   },
+  {
+    name: "YouTube",
+    icon: SiYoutube,
+    brandColor: "#FF0000",
+    linkTypes: [
+      {
+        type: "video",
+        label: "Video Link",
+        placeholder: "e.g., dQw4w9WgXcQ",
+        urlPattern: /^https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]+/,
+        baseUrl: "https://www.youtube.com/watch?v=",
+      },
+    ],
+  },
 ];
 
 export function hexToRgba(hex: string, alpha: number) {

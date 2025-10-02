@@ -10,9 +10,10 @@ import { useParams } from "next/navigation";
 import MusicCard from "./MusicCard";
 import { ChevronLeft, Folder } from "lucide-react"; // Import ChevronLeft icon and Folder icon
 import { useState, useEffect } from "react"; // Import useState and useEffect
-import { cn } from "@/lib/utils"; // Import cn for conditional classes
+import { cn, SUPPORTED_MUSIC_PLATFORMS } from "@/lib/utils"; // Import cn for conditional classes
 import Image from "next/image";
 import { MediaPreview } from "@/lib/utils";
+import { createElement, ComponentType } from "react";
 
 const sanitizeMediaPreview = (
   value: Doc<"links">["mediaPreview"] | undefined,
@@ -175,9 +176,18 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                                 <h3 className="text-lg font-bold text-slate-900 group-hover:text-slate-800 transition-colors duration-200 mb-1">
                                   {mediaPreview.title}
                                 </h3>
-                                <p className="text-xs italic text-slate-400 group-hover:text-slate-500 transition-colors duration-200 truncate font-normal">
-                                  {mediaPreview.url.replace(/^https?:\/\//, "")}
-                                </p>
+                                <div className="flex items-center text-xs text-slate-400 group-hover:text-slate-500 transition-colors duration-200">
+                                  {SUPPORTED_MUSIC_PLATFORMS.find((p) => p.name === "YouTube")?.icon && (
+                                    <span className="mr-1">
+                                      {createElement(
+                                        (SUPPORTED_MUSIC_PLATFORMS.find((p) => p.name === "YouTube")?.icon as ComponentType<{ className?: string }> | undefined) ??
+                                          (() => null),
+                                        { className: "w-3 h-3" },
+                                      )}
+                                    </span>
+                                  )}
+                                  YouTube
+                                </div>
                               </div>
                               <div className="ml-4 text-slate-400 group-hover:text-slate-600 transition-all duration-200 group-hover:translate-x-0.5">
                                 <ArrowUpRight className="w-5 h-5" />
@@ -264,9 +274,18 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                               <h3 className="text-lg font-bold text-slate-900 group-hover:text-slate-800 transition-colors duration-200 mb-1">
                                 {mediaPreview.title}
                               </h3>
-                              <p className="text-xs italic text-slate-400 group-hover:text-slate-500 transition-colors duration-200 truncate font-normal">
-                                {mediaPreview.url.replace(/^https?:\/\//, "")}
-                              </p>
+                              <div className="flex items-center text-xs text-slate-400 group-hover:text-slate-500 transition-colors duration-200">
+                                {SUPPORTED_MUSIC_PLATFORMS.find((p) => p.name === "YouTube")?.icon && (
+                                  <span className="mr-1">
+                                    {createElement(
+                                      (SUPPORTED_MUSIC_PLATFORMS.find((p) => p.name === "YouTube")?.icon as ComponentType<{ className?: string }> | undefined) ??
+                                        (() => null),
+                                      { className: "w-3 h-3" },
+                                    )}
+                                  </span>
+                                )}
+                                YouTube
+                              </div>
                             </div>
                             <div className="ml-4 text-slate-400 group-hover:text-slate-600 transition-all duration-200 group-hover:translate-x-0.5">
                               <ArrowUpRight className="w-5 h-5" />

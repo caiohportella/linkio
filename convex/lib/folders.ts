@@ -86,8 +86,27 @@ export const deleteFolder = mutation({
     if (!identity) throw new Error("Not authenticated");
 
     const { folderId } = args;
+    // Verify folder exists and belongs to the authenticated user
+    const folder = await db.get(folderId);
+    if (!folder) throw new Error("Folder not found");
+    if (folder.userId !== identity.subject) throw new Error("Unauthorized");
+
+    // Move any links owned by this user that reference this folder back to no-folder (main list)
+    const linksInFolder = await db
+      .query("links")
+      .withIndex("by_folderId", (q) => q.eq("folderId", folderId))
+      .collect();
+
+    for (const link of linksInFolder) {
+      if (link.userId !== identity.subject) continue;
+      try {
+        await db.patch(link._id, { folderId: undefined });
+      } catch (err) {
+        console.warn(`Failed to clear folderId for link ${link._id}:`, err);
+      }
+    }
 
     await db.delete(folderId);
-    console.log(`Deleted folder ${folderId}`);
+    console.log(`Deleted folder ${folderId} and moved ${linksInFolder.length} links to main list`);
   },
 });

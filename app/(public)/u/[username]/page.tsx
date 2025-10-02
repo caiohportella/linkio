@@ -25,7 +25,21 @@ export async function generateMetadata({
     ? `${username}'s Linkio | Personal Profile`
     : "Linkio Profile";
   const description = preloadedCustomizationsData?.description || "My personalized link-in-bio page.";
-  const imageUrl = preloadedCustomizationsData?.profilePictureUrl || "/logo.png"; // Fallback to a default logo
+  
+  // Handle profile picture URL properly
+  let imageUrl = `${getBaseUrl()}/logo.png`; // Default fallback with full URL
+  
+  if (preloadedCustomizationsData?.profilePictureUrl) {
+    // If it's already a full URL, use it as is
+    if (preloadedCustomizationsData.profilePictureUrl.startsWith('http')) {
+      imageUrl = preloadedCustomizationsData.profilePictureUrl;
+    } else {
+      // If it's a relative URL, make it absolute
+      imageUrl = preloadedCustomizationsData.profilePictureUrl.startsWith('/')
+        ? `${getBaseUrl()}${preloadedCustomizationsData.profilePictureUrl}`
+        : `${getBaseUrl()}/${preloadedCustomizationsData.profilePictureUrl}`;
+    }
+  }
 
   return {
     title: title,
@@ -38,12 +52,14 @@ export async function generateMetadata({
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: title,
+          alt: `${username}'s profile picture`,
+          type: "image/jpeg",
         },
       ],
       url: `${getBaseUrl()}/u/${username}`,
       siteName: "Linkio",
       type: "profile",
+      locale: "en_US",
     },
     twitter: {
       card: "summary_large_image",
@@ -52,6 +68,10 @@ export async function generateMetadata({
       title: title,
       description: description,
       images: [imageUrl],
+    },
+    other: {
+      "og:image:secure_url": imageUrl,
+      "og:image:type": "image/jpeg",
     },
   };
 }

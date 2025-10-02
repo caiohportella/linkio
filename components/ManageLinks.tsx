@@ -64,6 +64,26 @@ const ManageLinks = ({
     }
   }
 
+  function handleMoveUp(index: number) {
+    if (index > 0) {
+      setItems((items) => {
+        const newItems = arrayMove(items, index, index - 1);
+        updateLinkOrder({ linkIds: newItems });
+        return newItems;
+      });
+    }
+  }
+
+  function handleMoveDown(index: number) {
+    if (index < items.length - 1) {
+      setItems((items) => {
+        const newItems = arrayMove(items, index, index + 1);
+        updateLinkOrder({ linkIds: newItems });
+        return newItems;
+      });
+    }
+  }
+
   const linkMap = useMemo(() => {
     return Object.fromEntries(links.map((link) => [link._id, link]));
   }, [links]);
@@ -81,7 +101,7 @@ const ManageLinks = ({
       >
         <SortableContext items={items} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
-            {items.map((id) => {
+            {items.map((id, index) => {
               const link = linkMap[id];
               if (!link) return null;
               return (
@@ -91,6 +111,10 @@ const ManageLinks = ({
                   link={link}
                   folderNameMap={folderNameMap as Record<Id<"folders">, string>}
                   folders={folders as Doc<"folders">[]}
+                  onMoveUp={() => handleMoveUp(index)}
+                  onMoveDown={() => handleMoveDown(index)}
+                  canMoveUp={index > 0}
+                  canMoveDown={index < items.length - 1}
                 />
               );
             })}

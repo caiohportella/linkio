@@ -53,8 +53,13 @@ export const getCustomizationsBySlug = query({
     let profilePictureUrl: string | undefined;
 
     if (customizations.profilePictureStorageId) {
-      const url = await storage.getUrl(customizations.profilePictureStorageId);
-      profilePictureUrl = url || undefined;
+      try {
+        const url = await storage.getUrl(customizations.profilePictureStorageId);
+        profilePictureUrl = url || undefined;
+      } catch (error) {
+        console.error("Error getting profile picture URL:", error);
+        profilePictureUrl = undefined;
+      }
     }
 
     return { ...customizations, profilePictureUrl };
@@ -94,8 +99,13 @@ export const getUserCustomizations = query({
     let profilePictureUrl: string | undefined;
 
     if (customizations.profilePictureStorageId) {
-      const url = await storage.getUrl(customizations.profilePictureStorageId);
-      profilePictureUrl = url || undefined;
+      try {
+        const url = await storage.getUrl(customizations.profilePictureStorageId);
+        profilePictureUrl = url || undefined;
+      } catch (error) {
+        console.error("Error getting profile picture URL:", error);
+        profilePictureUrl = undefined;
+      }
     }
 
     return { ...customizations, profilePictureUrl };

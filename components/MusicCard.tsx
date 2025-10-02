@@ -18,8 +18,18 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
   const params = useParams();
   const username = params.username as string;
 
+  const hasMultipleMusicLinks = link.musicLinks && link.musicLinks.length > 1;
+
   const handleCardClick = () => {
-    setIsExpanded(!isExpanded);
+    if (hasMultipleMusicLinks) {
+      setIsExpanded(!isExpanded);
+    } else {
+      // If only one music link, directly navigate to it
+      const firstMusicLink = link.musicLinks?.[0];
+      if (firstMusicLink) {
+        handleMusicLinkClick(firstMusicLink);
+      }
+    }
   };
 
   const handleMusicLinkClick = async (musicLink: { platform: string; url: string; type: string }) => {
@@ -39,13 +49,21 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
   return (
     <div
       className={`relative bg-white/70 border border-slate-200/50 rounded-2xl overflow-hidden transition-all duration-300 shadow-lg ${
-        isExpanded ? "min-h-[300px]" : "hover:shadow-slate-900/5 hover:-translate-y-0.5"
+        isExpanded 
+          ? "min-h-[300px]" 
+          : hasMultipleMusicLinks 
+            ? "hover:shadow-slate-900/5 hover:-translate-y-0.5" 
+            : "hover:shadow-slate-900/5 hover:-translate-y-0.5"
       }`}
     >
       {/* Collapsed/Header Section */}
       <div
         className={`relative flex items-center p-4 cursor-pointer ${
-          isExpanded ? "pb-2" : "group hover:bg-white/90 hover:border-slate-300/50"
+          isExpanded 
+            ? "pb-2" 
+            : hasMultipleMusicLinks 
+              ? "group hover:bg-white/90 hover:border-slate-300/50" 
+              : "group hover:bg-white/90 hover:border-slate-300/50 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-0.5"
         }`}
         onClick={handleCardClick}
       >
@@ -73,20 +91,29 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
                 </span>
               )}
               {firstMusicLink.platform}
+              {hasMultipleMusicLinks && (
+                <span className="ml-2 px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded-full text-xs font-medium">
+                  +{link.musicLinks!.length - 1} more
+                </span>
+              )}
             </div>
           )}
         </div>
         <div className="ml-4 text-slate-400 group-hover:text-slate-600 transition-all duration-200">
-          {isExpanded ? (
-            <PlayCircle className="w-6 h-6 rotate-90" /> // Example icon when expanded, could be collapse icon
+          {hasMultipleMusicLinks ? (
+            isExpanded ? (
+              <PlayCircle className="w-6 h-6 rotate-90" />
+            ) : (
+              <PlayCircle className="w-6 h-6" />
+            )
           ) : (
-            <PlayCircle className="w-6 h-6" />
+            <ArrowUpRight className="w-6 h-6" />
           )}
         </div>
       </div>
 
-      {/* Expanded Content */}
-      {isExpanded && link.musicLinks && link.musicLinks.length > 0 && (
+      {/* Expanded Content - Only show when there are multiple music links */}
+      {isExpanded && hasMultipleMusicLinks && link.musicLinks && link.musicLinks.length > 0 && (
         <div className="px-4 pb-4 space-y-2">
           <p className="text-sm font-semibold text-slate-700 mb-2">Listen on:</p>
           {link.musicLinks.map((musicLink, index) => {

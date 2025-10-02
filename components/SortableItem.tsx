@@ -13,6 +13,8 @@ import {
   Clock,
   Folder,
   Music,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
@@ -56,11 +58,19 @@ const ScheduleLinkModal = dynamic(() => import("./ScheduleLinkModal"), {
   ssr: false,
 });
 
+const MusicLinksModal = dynamic(() => import("./MusicLinksModal"), {
+  ssr: false,
+});
+
 interface SortableItemProps {
   id: Id<"links">;
   link: Doc<"links">;
   folderNameMap?: Record<Id<"folders">, string>; // Made optional
   folders?: Doc<"folders">[]; // Made optional
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }
 
 const SortableItem = ({
@@ -68,6 +78,10 @@ const SortableItem = ({
   link,
   folderNameMap,
   folders,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp = false,
+  canMoveDown = false,
 }: SortableItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id });
@@ -94,62 +108,46 @@ const SortableItem = ({
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [scheduleCleared, setScheduleCleared] = useState(false);
   const isScheduleActive = !!scheduledAt || isScheduleModalOpen;
+  
+  // Music Links Modal state
+  const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
+  const [editingMusicLink, setEditingMusicLink] = useState<MusicLinkItem | null>(null);
   const isScheduleInFuture = link.scheduledAt
     ? link.scheduledAt > Date.now()
     : false;
 
-  // Mobile long-press to drag functionality
-  const [isLongPressing, setIsLongPressing] = useState(false);
-  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    // Only on mobile (screen width < 640px)
-    if (window.innerWidth >= 640) return;
-    
-    const timer = setTimeout(() => {
-      setIsLongPressing(true);
-      // Trigger drag start by dispatching a pointer event
-      const touch = e.touches[0];
-      const pointerEvent = new PointerEvent('pointerdown', {
-        pointerId: 1,
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        isPrimary: true,
-      });
-      e.currentTarget.dispatchEvent(pointerEvent);
-    }, 500); // 500ms long press
-    
-    setLongPressTimer(timer);
-  };
-
-  const handleTouchEnd = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-    setIsLongPressing(false);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    // Cancel long press if user moves too much
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-  };
-
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-      }
-    };
-  }, [longPressTimer]);
+  // Animation state for reordering
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationDirection, setAnimationDirection] = useState<'up' | 'down' | null>(null);
 
   const updateLink = useMutation(api.lib.links.updateLink);
   const deleteLink = useMutation(api.lib.links.deleteLink);
   const updateLinkFolder = useMutation(api.lib.links.updateLinkFolder); // New mutation
+
+  // Animation handlers
+  const handleAnimatedMoveUp = () => {
+    if (onMoveUp && canMoveUp) {
+      setAnimationDirection('up');
+      setIsAnimating(true);
+      onMoveUp();
+      setTimeout(() => {
+        setIsAnimating(false);
+        setAnimationDirection(null);
+      }, 300);
+    }
+  };
+
+  const handleAnimatedMoveDown = () => {
+    if (onMoveDown && canMoveDown) {
+      setAnimationDirection('down');
+      setIsAnimating(true);
+      onMoveDown();
+      setTimeout(() => {
+        setIsAnimating(false);
+        setAnimationDirection(null);
+      }, 300);
+    }
+  };
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -186,6 +184,18 @@ const SortableItem = ({
     );
     setMusicLinks(updatedLinks);
     toast.success(`${platformName} music link removed!`);
+  };
+
+  const handleSetMusicLinks = (newLinks: MusicLinkItem[]) => {
+    setMusicLinks(newLinks);
+    
+    // Update the primary URL to the first music link's URL
+    const primaryUrl = newLinks[0]?.url ?? link.url;
+    setEditUrl(primaryUrl);
+  };
+
+  const handleSetEditingMusicLink = (link: MusicLinkItem | null) => {
+    setEditingMusicLink(link);
   };
 
   const handleClearMediaPreview = () => {
@@ -255,7 +265,29 @@ const SortableItem = ({
   const folderName = link.folderId ? folderNameMap?.[link.folderId] : "";
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} className="relative">
+      {/* Mobile reorder buttons - positioned outside the card */}
+      <div className="sm:hidden absolute -left-8 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-10">
+        <button
+          onClick={handleAnimatedMoveUp}
+          disabled={!canMoveUp || isAnimating}
+          className="h-6 w-6 p-0 transition-all duration-200 cursor-pointer hover:bg-muted/50 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+        >
+          <ChevronUp className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
+            isAnimating && animationDirection === 'up' ? 'scale-110' : ''
+          }`} />
+        </button>
+        <button
+          onClick={handleAnimatedMoveDown}
+          disabled={!canMoveDown || isAnimating}
+          className="h-6 w-6 p-0 transition-all duration-200 cursor-pointer hover:bg-muted/50 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+        >
+          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
+            isAnimating && animationDirection === 'down' ? 'scale-110' : ''
+          }`} />
+        </button>
+      </div>
+
       {isEditing ? (
         <div className="space-y-4">
           <div className="space-y-2">
@@ -311,17 +343,27 @@ const SortableItem = ({
                     key={`${musicLink.platform}-${musicLink.type}`}
                     className="flex items-center justify-between rounded-2xl border border-border bg-card p-3"
                   >
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground truncate">
-                        {musicLink.musicTrackTitle ||
-                          `${musicLink.platform} (${musicLink.type})`}
-                      </p>
-                      {musicLink.musicArtistName && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          {musicLink.musicArtistName}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        setEditingMusicLink(musicLink);
+                        setIsMusicModalOpen(true);
+                      }}
+                      className="flex-1 justify-start cursor-pointer px-0 py-0 h-auto rounded-2xl"
+                    >
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="font-medium text-foreground truncate">
+                          {musicLink.musicTrackTitle ||
+                            `${musicLink.platform} (${musicLink.type})`}
                         </p>
-                      )}
-                    </div>
+                        {musicLink.musicArtistName && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {musicLink.musicArtistName}
+                          </p>
+                        )}
+                      </div>
+                    </Button>
                     <Button
                       type="button"
                       variant="ghost"
@@ -335,6 +377,20 @@ const SortableItem = ({
                 ))}
               </div>
             )}
+            
+            {/* Add More Sources Button */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setEditingMusicLink(null);
+                setIsMusicModalOpen(true);
+              }}
+              className="w-full cursor-pointer rounded-2xl border-dashed border-2 border-muted-foreground/25 hover:border-muted-foreground/50 hover:bg-muted/50 transition-all duration-200"
+            >
+              <Music className="w-4 h-4 mr-2" />
+              Add More Sources
+            </Button>
           </div>
 
           <div className="space-y-3">
@@ -500,18 +556,17 @@ const SortableItem = ({
           </div>
         </div>
       ) : (
-        <div 
-            className={`bg-card border border-border rounded-2xl p-4 shadow-sm transition-all duration-300 ease-out ${
-              isLongPressing 
-                ? 'scale-101 shadow-lg border-primary ring-2 ring-primary/20' 
-                : isDragging 
-                  ? 'scale-102 shadow-xl border-primary ring-4 ring-primary/30 rotate-1' 
-                  : ''
-            }`}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          onTouchMove={handleTouchMove}
-        >
+         <div 
+           className={`bg-card border border-border rounded-2xl p-4 shadow-sm transition-all duration-300 ease-out ${
+             isDragging 
+               ? 'scale-102 shadow-xl border-primary ring-4 ring-primary/30 rotate-1' 
+               : isAnimating
+                 ? animationDirection === 'up'
+                   ? 'animate-slide-up'
+                   : 'animate-slide-down'
+                 : ''
+           }`}
+         >
           {/* Desktop Layout */}
           <div className="hidden sm:flex items-center gap-3">
             {/* Drag Handle */}
@@ -596,24 +651,16 @@ const SortableItem = ({
             </div>
           </div>
 
-          {/* Mobile Layout */}
-          <div className="sm:hidden space-y-3">
-            {/* Header with title and drag indicator */}
-            <div className="flex items-start gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-base text-foreground leading-tight">
-                    {link.title}
-                  </h3>
-                  {isLongPressing && (
-                    <div className="flex items-center gap-1 text-xs text-primary animate-pulse">
-                      <GripVertical className="w-3 h-3 animate-bounce" />
-                      <span>Drag to reorder</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+           {/* Mobile Layout */}
+           <div className="sm:hidden space-y-3 pl-10">
+             {/* Header with title */}
+             <div className="flex items-start gap-3">
+               <div className="flex-1 min-w-0">
+                 <h3 className="font-semibold text-base text-foreground leading-tight">
+                   {link.title}
+                 </h3>
+               </div>
+             </div>
 
             {/* Content details */}
             <div className="space-y-1">
@@ -692,6 +739,16 @@ const SortableItem = ({
         onOpenChange={setIsScheduleModalOpen}
         initialValue={scheduledAt ?? undefined}
         onConfirm={handleSetScheduledAt}
+      />
+      <MusicLinksModal
+        isOpen={isMusicModalOpen}
+        onOpenChange={setIsMusicModalOpen}
+        musicLinks={musicLinks}
+        setMusicLinks={handleSetMusicLinks}
+        initialLink={editingMusicLink}
+        onClearInitialLink={() => setEditingMusicLink(null)}
+        handleRemoveMusicLink={handleRemoveMusicLink}
+        showExistingLinksOnOpen={musicLinks.length > 0}
       />
       <AlertDialog
         open={isDeleteDialogOpen}

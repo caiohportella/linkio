@@ -170,7 +170,7 @@ export const SUPPORTED_SOCIALS = [
     name: "TV Time",
     icon: SiTvtime,
     baseUrl: "https://tvtime.com/r/",
-    brandColor: "#3777FF",
+    brandColor: "#373737",
   },
   {
     name: "Reddit",

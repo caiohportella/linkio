@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,24 +27,38 @@ const ScheduleLinkModal: React.FC<ScheduleLinkModalProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [timeValue, setTimeValue] = useState<string>("12:00");
   const [error, setError] = useState<string | null>(null);
+  
+  // Custom time picker state (24-hour format)
+  const [selectedHour, setSelectedHour] = useState<number>(12);
+  const [selectedMinute, setSelectedMinute] = useState<number>(0);
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+  const timePickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       if (initialValue) {
         const date = new Date(initialValue);
         setSelectedDate(date);
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        
+        setSelectedHour(hours);
+        setSelectedMinute(minutes);
         setTimeValue(
-          `${date.getHours().toString().padStart(2, "0")}:${date
-            .getMinutes()
+          `${hours.toString().padStart(2, "0")}:${minutes
             .toString()
             .padStart(2, "0")}`,
         );
       } else {
         const now = new Date();
         setSelectedDate(now);
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        
+        setSelectedHour(hours);
+        setSelectedMinute(minutes);
         setTimeValue(
-          `${now.getHours().toString().padStart(2, "0")}:${now
-            .getMinutes()
+          `${hours.toString().padStart(2, "0")}:${minutes
             .toString()
             .padStart(2, "0")}`,
         );
@@ -54,6 +68,48 @@ const ScheduleLinkModal: React.FC<ScheduleLinkModalProps> = ({
   }, [initialValue, isOpen]);
 
   const minDate = useMemo(() => startOfDay(new Date()), []);
+
+  // Handle time picker interactions (24-hour format)
+  const handleTimeChange = (hour: number, minute: number) => {
+    setSelectedHour(hour);
+    setSelectedMinute(minute);
+    
+    setTimeValue(
+      `${hour.toString().padStart(2, "0")}:${minute
+        .toString()
+        .padStart(2, "0")}`,
+    );
+  };
+
+  const handleNowClick = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    
+    handleTimeChange(hours, minutes);
+    setIsTimePickerOpen(false);
+  };
+
+  const handleTimePickerOk = () => {
+    setIsTimePickerOpen(false);
+  };
+
+  // Close time picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (timePickerRef.current && !timePickerRef.current.contains(event.target as Node)) {
+        setIsTimePickerOpen(false);
+      }
+    };
+
+    if (isTimePickerOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isTimePickerOpen]);
 
   const handleSave = () => {
     if (!selectedDate) {
@@ -104,6 +160,12 @@ const ScheduleLinkModal: React.FC<ScheduleLinkModalProps> = ({
               mode="single"
               disabled={{ before: minDate }}
               captionLayout="dropdown"
+              classNames={{
+                today: selectedDate 
+                  ? "bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground" 
+                  : "bg-accent text-accent-foreground rounded-md data-[selected=true]:rounded-none",
+                day: "relative w-full h-full p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md group/day aspect-square select-none [&_button[data-selected-single=true]]:rounded-md"
+              }}
             />
           </div>
           <div className="flex flex-col gap-4">
@@ -111,33 +173,109 @@ const ScheduleLinkModal: React.FC<ScheduleLinkModalProps> = ({
               <p className="text-sm font-semibold text-foreground mb-2">
                 Time
               </p>
-              <div className="max-w-[9.5rem]">
+              <div className="max-w-32">
                 <label className="block mb-2 text-sm font-medium text-foreground">
                   Select time:
                 </label>
-                <div className="flex shadow-sm">
-                  <input
-                    type="time"
-                    value={timeValue}
-                    onChange={(e) => setTimeValue(e.target.value)}
-                    className="rounded-l-2xl rounded-r-none bg-input border border-border text-foreground leading-none focus:ring-2 focus:ring-primary focus:border-primary block flex-1 w-full text-sm p-2.5"
-                    required
+                <div className="relative w-full" ref={timePickerRef}>
+                  <input 
+                    type="text" 
+                    value={`${selectedHour.toString().padStart(2, "0")}:${selectedMinute.toString().padStart(2, "0")}`}
+                    readOnly
+                    className="py-2.5 sm:py-3 ps-4 pe-12 block w-full border border-border rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-input text-foreground" 
                   />
-                  <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-background border border-l-0 border-border rounded-r-2xl">
-                    <svg
-                      className="w-4 h-4"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </span>
+
+                  <div className="absolute inset-y-0 end-0 flex items-center pe-3">
+                    {/* Dropdown */}
+                    <div className="relative inline-flex">
+                      <button 
+                        type="button" 
+                        onClick={() => setIsTimePickerOpen(!isTimePickerOpen)}
+                        className="size-7 shrink-0 inline-flex justify-center items-center rounded-full bg-white text-gray-500 hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none cursor-pointer" 
+                        aria-haspopup="menu" 
+                        aria-expanded={isTimePickerOpen}
+                        aria-label="Time picker"
+                      >
+                        <span className="sr-only">Time picker</span>
+                        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                      </button>
+
+                      {isTimePickerOpen && (
+                        <div className="absolute right-0 top-full mt-2 min-w-30 bg-white border border-gray-200 shadow-xl rounded-2xl z-50 overflow-hidden">
+                          <div className="flex flex-row divide-x divide-gray-200">
+                            {/* Hours (24-hour format) */}
+                            <div className="p-1 max-h-56 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
+                              {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                                <label 
+                                  key={hour}
+                                  className={`group relative flex justify-center items-center p-1.5 w-10 text-center text-sm cursor-pointer rounded-md hover:bg-gray-100 transition-colors ${
+                                    selectedHour === hour ? 'text-white bg-blue-600' : 'text-gray-800 hover:text-gray-800'
+                                  }`}
+                                >
+                                  <input 
+                                    type="radio" 
+                                    className="hidden" 
+                                    name="hour" 
+                                    value={hour}
+                                    checked={selectedHour === hour}
+                                    onChange={() => handleTimeChange(hour, selectedMinute)}
+                                  />
+                                  <span className="block">
+                                    {hour.toString().padStart(2, "0")}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+
+                            {/* Minutes */}
+                            <div className="p-1 max-h-56 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-white [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
+                              {Array.from({ length: 60 }, (_, i) => i).map((minute) => (
+                                <label 
+                                  key={minute}
+                                  className={`group relative flex justify-center items-center p-1.5 w-10 text-center text-sm cursor-pointer rounded-md hover:bg-gray-100 transition-colors ${
+                                    selectedMinute === minute ? 'text-white bg-blue-600' : 'text-gray-800 hover:text-gray-800'
+                                  }`}
+                                >
+                                  <input 
+                                    type="radio" 
+                                    className="hidden" 
+                                    name="minute" 
+                                    value={minute}
+                                    checked={selectedMinute === minute}
+                                    onChange={() => handleTimeChange(selectedHour, minute)}
+                                  />
+                                  <span className="block">
+                                    {minute.toString().padStart(2, "0")}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Footer */}
+                          <div className="py-2 px-3 flex flex-wrap justify-between items-center gap-2 border-t border-gray-200">
+                            <button 
+                              type="button" 
+                              onClick={handleNowClick}
+                              className="text-[13px] font-medium rounded-md bg-white text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:text-blue-700 cursor-pointer"
+                            >
+                              Now
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={handleTimePickerOk}
+                              className="py-1 px-2.5 text-[13px] font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                            >
+                              OK
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

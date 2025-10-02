@@ -303,7 +303,7 @@ const CreateLinkForm = () => {
                       className={`cursor-pointer flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                         isScheduleActive
                           ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-accent/20 hover:bg-accent/30 text-foreground"
+                          : "bg-accent/20 hover:bg-accent/30"
                       }`}
                     >
                       <Clock className="w-4 h-4" />

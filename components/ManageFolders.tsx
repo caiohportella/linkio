@@ -259,10 +259,20 @@ export const ManageFolders = ({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
+              onClick={async () => {
                 if (!folderPendingDelete) return;
-                deleteFolder({ folderId: folderPendingDelete._id });
-                setFolderPendingDelete(null);
+                try {
+                  await deleteFolder({ folderId: folderPendingDelete._id });
+                  // If the user currently has this folder open, close it so the UI updates
+                  if (activeFolderId === folderPendingDelete._id) {
+                    setActiveFolderId(null);
+                    setFolderLinkItems([]);
+                  }
+                } catch (err) {
+                  console.error("Failed to delete folder:", err);
+                } finally {
+                  setFolderPendingDelete(null);
+                }
               }}
               className="cursor-pointer rounded-2xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

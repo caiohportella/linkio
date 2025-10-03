@@ -11,7 +11,6 @@ import {
 import { SiGithub, SiGoogle } from "react-icons/si";
 import { useSignIn } from "@clerk/nextjs";
 import { Mail, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -159,7 +158,7 @@ export default function SignInPage() {
           {/* Footer */}
           <div className="px-6 pb-6">
             <p className="text-center text-sm text-zinc-500">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <button
                 onClick={() => router.push("/sign-up")}
                 className="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"

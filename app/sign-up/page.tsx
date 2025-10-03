@@ -10,8 +10,7 @@ import {
 } from "@/components/ui/card";
 import { SiGithub, SiGoogle } from "react-icons/si";
 import { useSignIn } from "@clerk/nextjs";
-import { Mail, ArrowRight, Lock, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { ArrowRight, Lock, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -132,7 +132,7 @@ const UsernameForm = () => {
                 {currentSlug}
               </span>
               <Link
-                href={`/u/${currentSlug}`}
+                href={`/${currentSlug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-green-600 hover:text-green-700 transition-colors"
@@ -153,11 +153,11 @@ const UsernameForm = () => {
         </div>
         <div className="flex items-center gap-1.5">
           <div className="flex-1 text-foreground bg-input px-3 py-2 rounded border-l border-y truncate">
-            {getBaseUrl()}/u/{currentSlug}
+            {getBaseUrl()}/{currentSlug}
           </div>
           <button
             onClick={() => {
-              navigator.clipboard.writeText(`${getBaseUrl()}/u/${currentSlug}`);
+              navigator.clipboard.writeText(`${getBaseUrl()}/${currentSlug}`);
               toast.success("Copied to clipboard!");
             }}
             className="cursor-pointer flex items-center justify-center w-10 h-10 bg-input border rounded-r hover:bg-muted transition-colors"

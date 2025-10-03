@@ -6,7 +6,6 @@ import { ArrowRight } from "lucide-react";
 import { Unauthenticated } from "convex/react";
 // import { useState } from "react";
 // import { CustomAuthModal } from "../CustomAuthModal";
-import { SignInButton } from "@clerk/nextjs";
 
 export function HeroSection() {
   // const [showModal, setShowModal] = useState(false);
@@ -40,35 +39,24 @@ export function HeroSection() {
           transition={{ delay: 0.4, duration: 0.8 }}
         >
           <Unauthenticated>
-            <SignInButton
-              mode="modal"
-              appearance={{
-                variables: {
-                  colorPrimary: "#3b82f6",
-                  colorText: "#ffffff",
-                  colorBackground: "#175d79",
-                },
-              }}
+            <Button
+              size="lg"
+              onClick={() => window.location.href = '/sign-up'}
+              className="px-8 py-6 text-lg font-semibold rounded-2xl cursor-pointer"
             >
-              <Button
-                size="lg"
-                // onClick={() => setShowModal(true)}
-                className="px-8 py-6 text-lg font-semibold rounded-2xl"
+              Get Started{" "}
+              <motion.span
+                initial={{ x: 0 }}
+                animate={{ x: [0, 10, 0] }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
-                Get Started{" "}
-                <motion.span
-                  initial={{ x: 0 }}
-                  animate={{ x: [0, 10, 0] }}
-                  transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <ArrowRight />
-                </motion.span>
-              </Button>
-            </SignInButton>
+                <ArrowRight />
+              </motion.span>
+            </Button>
           </Unauthenticated>
         </motion.div>
 

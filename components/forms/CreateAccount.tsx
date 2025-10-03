@@ -22,7 +22,6 @@ export function CreateAccount() {
       await signIn?.authenticateWithRedirect({
         strategy: `oauth_${provider}`,
         redirectUrl: `${process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}/v1/oauth_callback`,
-        //https://engaged-dingo-72.clerk.accounts.dev/v1/oauth_callback
         redirectUrlComplete: "/dashboard",
       });
     } catch (err) {

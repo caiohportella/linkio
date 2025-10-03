@@ -33,7 +33,7 @@ export default function ShareModal({
   const [profileUrl, setProfileUrl] = useState("");
 
   useEffect(() => {
-    const url = `${getBaseUrl()}/u/${username}`;
+    const url = `${getBaseUrl()}/${username}`;
     setProfileUrl(url);
 
     // Generate QR code

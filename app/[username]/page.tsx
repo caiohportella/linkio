@@ -60,7 +60,7 @@ export async function generateMetadata({
           type: "image/jpeg",
         },
       ],
-      url: `${getBaseUrl()}/u/${username}`,
+      url: `${getBaseUrl()}/${username}`,
       siteName: "Linkio",
       type: "profile",
       locale: "en_US",

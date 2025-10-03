@@ -10,7 +10,21 @@ import { useParams } from "next/navigation";
 import MusicCard from "./MusicCard";
 import { ChevronLeft, Folder } from "lucide-react"; // Import ChevronLeft icon and Folder icon
 import { useState } from "react"; // Import useState
-import { SUPPORTED_MUSIC_PLATFORMS } from "@/lib/utils"; // Import SUPPORTED_MUSIC_PLATFORMS
+import {
+  SUPPORTED_MUSIC_PLATFORMS,
+  extractSpotifyPlaylistId,
+  generateSpotifyEmbedUrl,
+  isSpotifyPlaylist,
+  extractTidalPlaylistId,
+  generateTidalEmbedUrl,
+  isTidalPlaylist,
+  extractDeezerPlaylistId,
+  generateDeezerEmbedUrl,
+  isDeezerPlaylist,
+  extractAppleMusicPlaylistId,
+  generateAppleMusicEmbedUrl,
+  isAppleMusicPlaylist,
+} from "@/lib/utils"; // Import SUPPORTED_MUSIC_PLATFORMS and streaming utilities
 import Image from "next/image";
 import { MediaPreview } from "@/lib/utils";
 import { createElement, ComponentType } from "react";
@@ -150,6 +164,15 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
               {links
                 .filter((link) => !link.folderId)
                 .map((link) => {
+                  console.log("Processing unfolder link:", link._id, {
+                    hasPlaylistPreview: !!link.playlistPreview,
+                    hasMusicLinks: !!(
+                      link.musicLinks && link.musicLinks.length > 0
+                    ),
+                    hasMediaPreview: !!link.mediaPreview,
+                    playlistPreview: link.playlistPreview,
+                    musicLinks: link.musicLinks,
+                  });
                   const mediaPreview = sanitizeMediaPreview(link.mediaPreview);
                   if (mediaPreview) {
                     return (
@@ -209,6 +232,192 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                     );
                   }
                   if (link.playlistPreview) {
+                    console.log(
+                      "Rendering playlistPreview for link:",
+                      link._id,
+                      link.playlistPreview,
+                    );
+                    console.log("Platform:", link.playlistPreview.platform);
+                    console.log("URL:", link.url);
+                    console.log(
+                      "Is Deezer playlist:",
+                      isDeezerPlaylist(link.url),
+                    );
+
+                    // Check for Spotify playlist and render as iframe
+                    if (
+                      link.playlistPreview.platform === "Spotify" &&
+                      isSpotifyPlaylist(link.url)
+                    ) {
+                      const playlistId = extractSpotifyPlaylistId(link.url);
+                      if (playlistId) {
+                        const embedUrl = generateSpotifyEmbedUrl(playlistId);
+                        return (
+                          <motion.div
+                            key={link._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="rounded-2xl border border-border bg-card overflow-hidden"
+                          >
+                            <iframe
+                              data-testid="embed-iframe"
+                              style={{ borderRadius: "12px" }}
+                              src={embedUrl}
+                              width="100%"
+                              height="352"
+                              frameBorder="0"
+                              allowFullScreen
+                              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                              loading="lazy"
+                              className="w-full"
+                            />
+                          </motion.div>
+                        );
+                      }
+                    }
+
+                    // Check for Tidal playlist and render as iframe
+                    if (
+                      link.playlistPreview.platform === "Tidal" &&
+                      isTidalPlaylist(link.url)
+                    ) {
+                      const playlistId = extractTidalPlaylistId(link.url);
+                      if (playlistId) {
+                        const embedUrl = generateTidalEmbedUrl(playlistId);
+                        return (
+                          <motion.div
+                            key={link._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="rounded-2xl border border-border bg-card overflow-hidden"
+                          >
+                            <iframe
+                              data-testid="embed-iframe"
+                              style={{
+                                borderRadius: "12px",
+                                colorScheme: "light dark",
+                              }}
+                              src={embedUrl}
+                              width="100%"
+                              height="275"
+                              frameBorder="0"
+                              allow="encrypted-media; fullscreen; clipboard-write https://embed.tidal.com; web-share"
+                              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+                              title="TIDAL Embed Player"
+                              loading="lazy"
+                              className="w-full"
+                            />
+                          </motion.div>
+                        );
+                      }
+                    }
+
+                    // Check for Deezer playlist and render as iframe
+                    if (
+                      link.playlistPreview.platform === "Deezer" &&
+                      isDeezerPlaylist(link.url)
+                    ) {
+                      console.log("Deezer playlist detected:", link.url);
+                      // Try to extract from URL first, fallback to playlistPreview data
+                      let playlistId = extractDeezerPlaylistId(link.url);
+                      if (!playlistId && link.playlistPreview.playlistId) {
+                        playlistId = link.playlistPreview.playlistId;
+                        console.log(
+                          "Using playlist ID from playlistPreview data:",
+                          playlistId,
+                        );
+                      }
+                      console.log("Final Deezer playlist ID:", playlistId);
+                      if (playlistId) {
+                        const embedUrl = generateDeezerEmbedUrl(playlistId);
+                        return (
+                          <motion.div
+                            key={link._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="rounded-2xl border border-border bg-card overflow-hidden"
+                          >
+                            <iframe
+                              title="deezer-widget"
+                              src={embedUrl}
+                              width="100%"
+                              height="300"
+                              frameBorder="0"
+                              allow="encrypted-media; clipboard-write"
+                              loading="lazy"
+                              className="w-full"
+                              style={{ borderRadius: "12px" }}
+                            />
+                          </motion.div>
+                        );
+                      }
+                    }
+
+                    // Check for Apple Music playlist and render as iframe
+                    if (
+                      link.playlistPreview.platform === "Apple Music" &&
+                      isAppleMusicPlaylist(link.url)
+                    ) {
+                      const playlistId = extractAppleMusicPlaylistId(link.url);
+                      if (playlistId) {
+                        const embedUrl = generateAppleMusicEmbedUrl(playlistId);
+                        return (
+                          <motion.div
+                            key={link._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="rounded-2xl border border-border bg-white overflow-hidden"
+                          >
+                            <iframe
+                              allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write"
+                              height="450"
+                              style={{
+                                width: "100%",
+                                overflow: "hidden",
+                              }}
+                              sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
+                              src={embedUrl}
+                              loading="lazy"
+                              className="w-full"
+                            />
+                          </motion.div>
+                        );
+                      }
+                    }
+
+                    // Check for services without embed support (YouTube Music, Amazon Music)
+                    const noEmbedServices = ["YouTube Music", "Amazon Music"];
+                    if (
+                      noEmbedServices.includes(link.playlistPreview.platform)
+                    ) {
+                      // Convert playlist preview to music link format for display as Music Card
+                      const musicLinkData = {
+                        ...link,
+                        musicLinks: [
+                          {
+                            platform: link.playlistPreview.platform,
+                            url: link.url,
+                            type: "playlist",
+                            musicTrackTitle: link.playlistPreview.title,
+                            musicArtistName:
+                              link.playlistPreview.ownerName || "Unknown Owner",
+                            musicAlbumArtUrl: link.playlistPreview.thumbnailUrl,
+                          },
+                        ],
+                        musicTrackTitle: link.playlistPreview.title,
+                        musicArtistName:
+                          link.playlistPreview.ownerName || "Unknown Owner",
+                        musicAlbumArtUrl: link.playlistPreview.thumbnailUrl,
+                        playlistPreview: link.playlistPreview, // Include playlist preview data for track count
+                      };
+                      return <MusicCard key={link._id} link={musicLinkData} />;
+                    }
+
+                    // Default playlist rendering for non-Spotify playlists
                     return (
                       <motion.div
                         key={link._id}
@@ -264,6 +473,11 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                       </motion.div>
                     );
                   } else if (link.musicLinks && link.musicLinks.length > 0) {
+                    console.log(
+                      "Rendering musicLinks for link:",
+                      link._id,
+                      link.musicLinks,
+                    );
                     return <MusicCard key={link._id} link={link} />;
                   } else {
                     return (
@@ -338,6 +552,15 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
           >
             <div className="space-y-4">
               {filteredLinks.map((link) => {
+                console.log("Processing link:", link._id, {
+                  hasPlaylistPreview: !!link.playlistPreview,
+                  hasMusicLinks: !!(
+                    link.musicLinks && link.musicLinks.length > 0
+                  ),
+                  hasMediaPreview: !!link.mediaPreview,
+                  playlistPreview: link.playlistPreview,
+                  musicLinks: link.musicLinks,
+                });
                 const mediaPreview = sanitizeMediaPreview(link.mediaPreview);
                 if (mediaPreview) {
                   return (

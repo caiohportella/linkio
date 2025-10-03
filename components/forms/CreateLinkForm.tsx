@@ -114,7 +114,7 @@ const formSchema = z
               name: z.string(),
               artist: z.string(),
               duration: z.string().optional(),
-              previewUrl: z.string().optional(),
+              previewUrl: z.string().nullable().optional(),
             }),
           )
           .optional(),
@@ -124,7 +124,11 @@ const formSchema = z
     scheduledAt: z.number().nullable().optional(),
   })
   .superRefine((data, ctx) => {
-    if (!data.url && (!data.musicLinks || data.musicLinks.length === 0) && !data.playlistPreview) {
+    if (
+      !data.url &&
+      (!data.musicLinks || data.musicLinks.length === 0) &&
+      !data.playlistPreview
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Either a URL, music link, or playlist is required.",
@@ -226,6 +230,15 @@ const CreateLinkForm = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log("Form submitted with values:", values);
+    console.log("Form validation state:", {
+      hasTitle: !!values.title,
+      hasUrl: !!values.url,
+      hasMusicLinks: !!(values.musicLinks && values.musicLinks.length > 0),
+      hasPlaylistPreview: !!values.playlistPreview,
+      hasMediaPreview: !!values.mediaPreview,
+      playlistPreview: values.playlistPreview,
+      musicLinks: values.musicLinks,
+    });
     setError(null);
 
     startSubmitting(async () => {
@@ -603,6 +616,43 @@ const CreateLinkForm = () => {
             type="submit"
             disabled={isSubmitting}
             className="rounded-2xl cursor-pointer"
+            onClick={() => {
+              console.log("Create Link button clicked");
+              console.log("Form values at click:", form.getValues());
+              console.log("Form errors at click:", form.formState.errors);
+              console.log("Form is valid:", form.formState.isValid);
+              console.log("Form is submitting:", form.formState.isSubmitting);
+              console.log("Form is dirty:", form.formState.isDirty);
+
+              // Try to validate the form manually
+              form.trigger().then((isValid) => {
+                console.log("Manual form validation result:", isValid);
+                if (!isValid) {
+                  console.log(
+                    "Form validation errors after trigger:",
+                    form.formState.errors,
+                  );
+                }
+              });
+
+              // Check playlistPreview structure specifically
+              const playlistPreview = form.getValues().playlistPreview;
+              if (playlistPreview) {
+                console.log("PlaylistPreview validation check:", {
+                  hasPlatform: !!playlistPreview.platform,
+                  hasUrl: !!playlistPreview.url,
+                  hasPlaylistId: !!playlistPreview.playlistId,
+                  hasTitle: !!playlistPreview.title,
+                  hasDescription: !!playlistPreview.description,
+                  hasThumbnailUrl: !!playlistPreview.thumbnailUrl,
+                  hasTrackCount: typeof playlistPreview.trackCount,
+                  hasOwnerName: !!playlistPreview.ownerName,
+                  hasTracks: Array.isArray(playlistPreview.tracks),
+                  tracksLength: playlistPreview.tracks?.length,
+                  firstTrack: playlistPreview.tracks?.[0],
+                });
+              }
+            }}
           >
             {isSubmitting ? (
               <>

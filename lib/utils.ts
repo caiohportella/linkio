@@ -26,6 +26,136 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Streaming platform embed utilities
+export function extractSpotifyPlaylistId(url: string): string | null {
+  const match = url.match(/spotify\.com\/playlist\/([a-zA-Z0-9]+)/);
+  return match ? match[1] : null;
+}
+
+export function generateSpotifyEmbedUrl(playlistId: string): string {
+  return `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator`;
+}
+
+export function isSpotifyPlaylist(url: string): boolean {
+  return /spotify\.com\/playlist\//.test(url);
+}
+
+// Tidal embed utilities
+export function extractTidalPlaylistId(url: string): string | null {
+  const match = url.match(/tidal\.com\/playlist\/([a-zA-Z0-9-]+)/);
+  return match ? match[1] : null;
+}
+
+export function generateTidalEmbedUrl(playlistId: string): string {
+  return `https://embed.tidal.com/playlists/${playlistId}`;
+}
+
+export function isTidalPlaylist(url: string): boolean {
+  return /tidal\.com\/playlist\//.test(url);
+}
+
+// Deezer embed utilities
+export function extractDeezerPlaylistId(url: string): string | null {
+  // Try multiple Deezer URL patterns
+  const patterns = [
+    /deezer\.com\/[a-z]+\/playlist\/(\d+)/, // deezer.com/en/playlist/123456
+    /deezer\.com\/playlist\/(\d+)/, // deezer.com/playlist/123456
+    /deezer\.com\/[a-z]+\/playlist\/(\d+)\?/, // with query params
+    /deezer\.com\/playlist\/(\d+)\?/, // with query params
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+export function generateDeezerEmbedUrl(playlistId: string): string {
+  return `https://widget.deezer.com/widget/dark/playlist/${playlistId}`;
+}
+
+export function isDeezerPlaylist(url: string): boolean {
+  return /deezer\.com.*playlist\//.test(url) || /link\.deezer\.com/.test(url);
+}
+
+// Apple Music embed utilities
+export function extractAppleMusicPlaylistId(url: string): string | null {
+  const match = url.match(
+    /music\.apple\.com\/[a-z]{2}\/playlist\/[^/]+\/([a-zA-Z0-9.-]+)/,
+  );
+  return match ? match[1] : null;
+}
+
+export function generateAppleMusicEmbedUrl(
+  playlistId: string,
+  region: string = "us",
+): string {
+  return `https://embed.music.apple.com/${region}/playlist/${playlistId}`;
+}
+
+export function isAppleMusicPlaylist(url: string): boolean {
+  return /music\.apple\.com\/[a-z]+\/playlist\//.test(url);
+}
+
+// Apple Music link utilities
+export function extractAppleMusicTrackId(url: string): string | null {
+  const match = url.match(
+    /music\.apple\.com\/[a-z]{2}\/song\/[^/]+\/(\d+)(?:\?i=(\d+))?/,
+  );
+  return match ? match[2] || match[1] : null;
+}
+
+export function extractAppleMusicAlbumId(url: string): string | null {
+  const match = url.match(/music\.apple\.com\/[a-z]{2}\/album\/[^/]+\/(\d+)/);
+  return match ? match[1] : null;
+}
+
+export function extractAppleMusicRegion(url: string): string | null {
+  const match = url.match(/music\.apple\.com\/([a-z]{2})\//);
+  return match ? match[1] : null;
+}
+
+export function shortenAppleMusicUrl(url: string): string {
+  const region = extractAppleMusicRegion(url) || "us";
+
+  // Extract track ID and create shortened URL
+  const trackId = extractAppleMusicTrackId(url);
+  if (trackId) {
+    return `https://music.apple.com/${region}/song/${trackId}`;
+  }
+
+  // Extract album ID and create shortened URL
+  const albumId = extractAppleMusicAlbumId(url);
+  if (albumId) {
+    return `https://music.apple.com/${region}/album/${albumId}`;
+  }
+
+  // Extract playlist ID and create shortened URL
+  const playlistId = extractAppleMusicPlaylistId(url);
+  if (playlistId) {
+    return `https://music.apple.com/${region}/playlist/${playlistId}`;
+  }
+
+  return url; // Return original if no pattern matches
+}
+
+// YouTube Music embed utilities
+export function extractYouTubeMusicPlaylistId(url: string): string | null {
+  const match = url.match(
+    /music\.youtube\.com\/playlist\?list=([a-zA-Z0-9_-]+)/,
+  );
+  return match ? match[1] : null;
+}
+
+export function generateYouTubeMusicEmbedUrl(playlistId: string): string {
+  return `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
+}
+
+export function isYouTubeMusicPlaylist(url: string): boolean {
+  return /music\.youtube\.com\/playlist\//.test(url);
+}
+
 export function formatDateTime(
   timestamp: number,
   options?: Intl.DateTimeFormatOptions,
@@ -249,26 +379,29 @@ export const SUPPORTED_MUSIC_PLATFORMS = [
       {
         type: "track",
         label: "Track Link",
-        placeholder: "e.g., 1440843428?i=1440843433",
+        placeholder:
+          "e.g., https://music.apple.com/us/song/the-fate-of-ophelia/1838810951",
         urlPattern:
-          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/song\/[^/]+\/\d+(?:\?i=\d+)?/,
-        baseUrl: "https://music.apple.com/br/song/",
+          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/song\/(?:[^/]+\/)?\d+(?:\?i=\d+)?/,
+        baseUrl: "https://music.apple.com/us/song/",
       },
       {
         type: "album",
         label: "Album Link",
-        placeholder: "e.g., 1440843428",
+        placeholder:
+          "e.g., https://music.apple.com/br/album/electric-dusk/1699908490",
         urlPattern:
           /^https?:\/\/music\.apple\.com\/[a-z]{2}\/album\/[^/]+\/\d+/,
-        baseUrl: "https://music.apple.com/br/album/",
+        baseUrl: "https://music.apple.com/us/album/",
       },
       {
         type: "playlist",
         label: "Playlist Link",
-        placeholder: "e.g., pl.u-Ldbq5Zru2d9",
+        placeholder:
+          "e.g., https://music.apple.com/us/playlist/new-music-daily/pl.2b0e6e332fdf4b7a91164da3162127b5",
         urlPattern:
-          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/playlist\/[^/]+\/pl\.u-[a-zA-Z0-9]+/,
-        baseUrl: "https://music.apple.com/br/playlist/",
+          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/playlist\/[^/]+\/pl\.[a-zA-Z0-9.-]+/,
+        baseUrl: "https://music.apple.com/us/playlist/",
       },
     ],
   },
@@ -389,11 +522,6 @@ export function hexToRgba(hex: string, alpha: number) {
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-export function extractAppleMusicRegion(url: string): string | null {
-  const match = url.match(/^https?:\/\/music\.apple\.com\/([a-z]{2})\//);
-  return match ? match[1] : null;
 }
 
 export function buildAppleMusicUrl(

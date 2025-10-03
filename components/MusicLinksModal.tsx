@@ -10,6 +10,7 @@ import {
   buildAppleMusicUrl,
   extractAmazonMusicRegion,
   buildAmazonMusicUrl,
+  shortenAppleMusicUrl,
 } from "@/lib/utils";
 import { toast } from "sonner";
 import { Trash2, Plus, Loader2 } from "lucide-react";
@@ -98,16 +99,28 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
               setSelectedLinkType(linkType);
               const extractedId = initialLink.url.replace(linkType.baseUrl, "");
               setMusicInput(extractedId);
-              setMusicTrackTitle(initialLink.musicTrackTitle || ""); // Populate metadata
-              setMusicArtistName(initialLink.musicArtistName || "");
+              // For Deezer, the stored data might have fields swapped
+              if (initialLink.platform === "Deezer") {
+                setMusicTrackTitle(initialLink.musicArtistName || ""); // Deezer stores track title in artist field
+                setMusicArtistName(initialLink.musicTrackTitle || ""); // Deezer stores artist in track title field
+              } else {
+                setMusicTrackTitle(initialLink.musicTrackTitle || ""); // Populate metadata
+                setMusicArtistName(initialLink.musicArtistName || "");
+              }
               setMusicAlbumArtUrl(initialLink.musicAlbumArtUrl || "");
               setCurrentView("inputForm");
               return;
             }
           }
           setMusicInput(initialLink.url);
-          setMusicTrackTitle(initialLink.musicTrackTitle || ""); // Populate metadata
-          setMusicArtistName(initialLink.musicArtistName || "");
+          // For Deezer, the stored data might have fields swapped
+          if (initialLink.platform === "Deezer") {
+            setMusicTrackTitle(initialLink.musicArtistName || ""); // Deezer stores track title in artist field
+            setMusicArtistName(initialLink.musicTrackTitle || ""); // Deezer stores artist in track title field
+          } else {
+            setMusicTrackTitle(initialLink.musicTrackTitle || ""); // Populate metadata
+            setMusicArtistName(initialLink.musicArtistName || "");
+          }
           setMusicAlbumArtUrl(initialLink.musicAlbumArtUrl || "");
           setCurrentView("inputForm");
         }
@@ -171,8 +184,14 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
       if (existingLink) {
         const extractedId = existingLink.url.replace(linkType.baseUrl, "");
         setMusicInput(extractedId);
-        setMusicTrackTitle(existingLink.musicTrackTitle || ""); // Populate metadata
-        setMusicArtistName(existingLink.musicArtistName || "");
+        // For Deezer, the stored data might have fields swapped
+        if (existingLink.platform === "Deezer") {
+          setMusicTrackTitle(existingLink.musicArtistName || ""); // Deezer stores track title in artist field
+          setMusicArtistName(existingLink.musicTrackTitle || ""); // Deezer stores artist in track title field
+        } else {
+          setMusicTrackTitle(existingLink.musicTrackTitle || ""); // Populate metadata
+          setMusicArtistName(existingLink.musicArtistName || "");
+        }
         setMusicAlbumArtUrl(existingLink.musicAlbumArtUrl || "");
       } else {
         setMusicInput("");
@@ -313,6 +332,15 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
       }
     }
 
+    // Special handling for Apple Music URLs to shorten them
+    if (
+      selectedPlatform.name === "Apple Music" &&
+      musicInput.startsWith("http")
+    ) {
+      finalUrl = shortenAppleMusicUrl(musicInput);
+      potentialFullUrl = finalUrl; // Update potentialFullUrl for validation
+    }
+
     console.log("musicInput:", musicInput);
     console.log("selectedLinkType.baseUrl:", selectedLinkType.baseUrl);
     console.log("potentialFullUrl:", potentialFullUrl);
@@ -416,8 +444,15 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
         platform: selectedPlatform.name,
         url: finalUrl,
         type: selectedLinkType.type,
-        musicTrackTitle: autoMetadata.title,
-        musicArtistName: autoMetadata.artist,
+        // For Deezer, swap the fields to match the expected storage format
+        musicTrackTitle:
+          selectedPlatform.name === "Deezer"
+            ? autoMetadata.artist
+            : autoMetadata.title,
+        musicArtistName:
+          selectedPlatform.name === "Deezer"
+            ? autoMetadata.title
+            : autoMetadata.artist,
         musicAlbumArtUrl: autoMetadata.artworkUrl,
       };
       const existingLinkIndex = musicLinks.findIndex(
@@ -491,8 +526,14 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
           setSelectedLinkType(linkType);
           const extractedId = linkToEdit.url.replace(linkType.baseUrl, "");
           setMusicInput(extractedId);
-          setMusicTrackTitle(linkToEdit.musicTrackTitle || ""); // Populate metadata
-          setMusicArtistName(linkToEdit.musicArtistName || "");
+          // For Deezer, the stored data might have fields swapped
+          if (linkToEdit.platform === "Deezer") {
+            setMusicTrackTitle(linkToEdit.musicArtistName || ""); // Deezer stores track title in artist field
+            setMusicArtistName(linkToEdit.musicTrackTitle || ""); // Deezer stores artist in track title field
+          } else {
+            setMusicTrackTitle(linkToEdit.musicTrackTitle || ""); // Populate metadata
+            setMusicArtistName(linkToEdit.musicArtistName || "");
+          }
           setMusicAlbumArtUrl(linkToEdit.musicAlbumArtUrl || "");
           setCurrentView("inputForm");
           if (onClearInitialLink) {
@@ -503,8 +544,14 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
       }
       // Fallback if specific link type not found for existing link
       setMusicInput(linkToEdit.url);
-      setMusicTrackTitle(linkToEdit.musicTrackTitle || ""); // Populate metadata
-      setMusicArtistName(linkToEdit.musicArtistName || "");
+      // For Deezer, the stored data might have fields swapped
+      if (linkToEdit.platform === "Deezer") {
+        setMusicTrackTitle(linkToEdit.musicArtistName || ""); // Deezer stores track title in artist field
+        setMusicArtistName(linkToEdit.musicTrackTitle || ""); // Deezer stores artist in track title field
+      } else {
+        setMusicTrackTitle(linkToEdit.musicTrackTitle || ""); // Populate metadata
+        setMusicArtistName(linkToEdit.musicArtistName || "");
+      }
       setMusicAlbumArtUrl(linkToEdit.musicAlbumArtUrl || "");
       setCurrentView("inputForm");
     }
@@ -822,7 +869,10 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
                 Preview:{" "}
                 <span className="underline">
                   {musicInput
-                    ? selectedLinkType.baseUrl + musicInput
+                    ? selectedPlatform?.name === "Apple Music" &&
+                      musicInput.startsWith("http")
+                      ? shortenAppleMusicUrl(musicInput)
+                      : selectedLinkType.baseUrl + musicInput
                     : "Enter ID for preview"}
                 </span>
               </p>

@@ -38,7 +38,7 @@ export default function ShareModal({
 
     // Generate QR code
     QRCode.toDataURL(url, {
-      width: 256,
+      width: 200,
       margin: 2,
       color: {
         dark: accentColor,
@@ -77,14 +77,77 @@ export default function ShareModal({
         break;
       case "x":
       case "twitter":
-        shareUrl = `https://x.com/intent/post?text=${encodedText}%20${encodedUrl}`;
+        // Try mobile app first, fallback to web
+        const isMobile =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent,
+          );
+        if (isMobile) {
+          // Try to open X app directly
+          const xAppUrl = `twitter://post?message=${encodedText}%20${encodedUrl}`;
+          const xWebUrl = `https://x.com/intent/post?text=${encodedText}%20${encodedUrl}`;
+
+          // Try app first, fallback to web
+          const link = document.createElement("a");
+          link.href = xAppUrl;
+          link.click();
+
+          // Fallback to web after a short delay
+          setTimeout(() => {
+            window.open(xWebUrl, "_blank");
+          }, 1000);
+          return;
+        } else {
+          shareUrl = `https://x.com/intent/post?text=${encodedText}%20${encodedUrl}`;
+        }
         break;
       case "instagram":
-        // Instagram Stories sharing (opens Instagram app or web)
-        shareUrl = `https://www.instagram.com/create/story/`;
+        // Try Instagram app first, fallback to web
+        const isMobileDevice =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent,
+          );
+        if (isMobileDevice) {
+          // Try to open Instagram app directly for stories
+          const instagramAppUrl = `instagram://story-camera`;
+          const instagramWebUrl = `https://www.instagram.com/create/story/`;
+
+          const link = document.createElement("a");
+          link.href = instagramAppUrl;
+          link.click();
+
+          // Fallback to web after a short delay
+          setTimeout(() => {
+            window.open(instagramWebUrl, "_blank");
+          }, 1000);
+          return;
+        } else {
+          shareUrl = `https://www.instagram.com/create/story/`;
+        }
         break;
       case "linkedin":
-        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        // Try LinkedIn app first, fallback to web
+        const isMobileLinkedIn =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent,
+          );
+        if (isMobileLinkedIn) {
+          // Try to open LinkedIn app directly
+          const linkedinAppUrl = `linkedin://share?url=${encodedUrl}`;
+          const linkedinWebUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+
+          const link = document.createElement("a");
+          link.href = linkedinAppUrl;
+          link.click();
+
+          // Fallback to web after a short delay
+          setTimeout(() => {
+            window.open(linkedinWebUrl, "_blank");
+          }, 1000);
+          return;
+        } else {
+          shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        }
         break;
       case "facebook":
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
@@ -113,7 +176,7 @@ export default function ShareModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-sm rounded-2xl bg-card"
+        className="max-w-sm rounded-2xl bg-card max-h-[90vh] overflow-y-auto"
         showCloseButton={false}
       >
         <DialogHeader className="relative">
@@ -133,8 +196,13 @@ export default function ShareModal({
         {/* Content */}
         <div className="py-6">
           <div className="space-y-6">
-            {/* Dark Profile Card */}
-            <Card className="text-white rounded-2xl">
+            {/* Dark Profile Card with Gradient */}
+            <Card
+              className="text-white rounded-2xl"
+              style={{
+                background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}CC 50%, ${accentColor}99 100%)`,
+              }}
+            >
               <CardContent className="text-center py-8">
                 {/* Profile Picture */}
                 <div className="flex justify-center mb-4">
@@ -183,8 +251,8 @@ export default function ShareModal({
                       <Image
                         src={qrCodeDataUrl}
                         alt="QR Code"
-                        width={150}
-                        height={150}
+                        width={120}
+                        height={120}
                         className="rounded"
                       />
                     </div>

@@ -145,11 +145,17 @@ async function fetchSpotifyPlaylistMetadata(url: string) {
 
 async function fetchAppleMusicPlaylistMetadata(url: string) {
   try {
+    // Extract region from URL for better language handling
+    const regionMatch = url.match(/music\.apple\.com\/([a-z]{2})\//);
+    const region = regionMatch ? regionMatch[1] : "us";
+
     // For Apple Music, we'll use a simple scraping approach
     const response = await fetch(url, {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Accept-Language":
+          region === "br" ? "pt-BR,pt;q=0.9,en;q=0.8" : "en-US,en;q=0.9",
       },
     });
 
@@ -159,11 +165,23 @@ async function fetchAppleMusicPlaylistMetadata(url: string) {
 
     const html = await response.text();
 
-    // Extract title from page title or meta tags
+    // Extract title from page title with better cleaning
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const title = titleMatch
-      ? titleMatch[1].replace(/[^\w\s-]/g, "").trim()
-      : "Apple Music Playlist";
+    let title = "Apple Music Playlist";
+
+    if (titleMatch) {
+      const titleText = titleMatch[1];
+      // Remove Apple Music branding and clean up the title
+      title = titleText
+        .replace(/—\s*playlist\s*by.*$/i, "")
+        .replace(/—\s*playlist\s*de.*$/i, "")
+        .replace(/—\s*playlist\s*par.*$/i, "")
+        .replace(/—\s*playlist\s*von.*$/i, "")
+        .replace(/\|\s*Apple\s*Music.*$/i, "")
+        .replace(/\s*—\s*Apple\s*Music.*$/i, "")
+        .replace(/[^\w\s-]/g, "")
+        .trim();
+    }
 
     // Extract artwork from meta tags
     const artworkMatch = html.match(
@@ -175,7 +193,9 @@ async function fetchAppleMusicPlaylistMetadata(url: string) {
     let trackCount = 0;
 
     // Look for track count in meta description or other patterns
-    const trackCountMatch = html.match(/(\d+)\s*(?:songs?|tracks?|tunes?)/i);
+    const trackCountMatch = html.match(
+      /(\d+)\s*(?:songs?|tracks?|tunes?|músicas?|faixas?)/i,
+    );
     if (trackCountMatch) {
       trackCount = parseInt(trackCountMatch[1]);
     }
@@ -200,10 +220,16 @@ async function fetchAppleMusicPlaylistMetadata(url: string) {
       }
     }
 
+    // Extract playlist ID from URL
+    const playlistIdMatch = url.match(/\/playlist\/[^/]+\/([a-zA-Z0-9.-]+)/);
+    const playlistId = playlistIdMatch
+      ? playlistIdMatch[1]
+      : url.split("/").pop() || "";
+
     return {
       platform: "Apple Music",
       url: url,
-      playlistId: url.split("/").pop() || "",
+      playlistId: playlistId,
       title: title,
       description: "",
       thumbnailUrl: artworkUrl,
@@ -226,6 +252,7 @@ async function fetchYouTubeMusicPlaylistMetadata(url: string) {
     let title = "YouTube Music Playlist";
     let thumbnailUrl = undefined;
     let ownerName = "YouTube Music";
+    let artistName = undefined;
 
     if (oembedResponse.ok) {
       const oembedData = await oembedResponse.json();
@@ -253,6 +280,53 @@ async function fetchYouTubeMusicPlaylistMetadata(url: string) {
         );
         if (trackCountMatch) {
           trackCount = parseInt(trackCountMatch[1]);
+        }
+
+        // Additional patterns for YouTube Music
+        if (!trackCount) {
+          // Look for track count in YouTube-specific patterns
+          const ytTrackCountMatch = html.match(/"trackCount":\s*(\d+)/);
+          if (ytTrackCountMatch) {
+            trackCount = parseInt(ytTrackCountMatch[1]);
+          }
+        }
+
+        if (!trackCount) {
+          // Look for track count in YouTube Music specific JSON patterns
+          const ytMusicCountMatch = html.match(/"numTracks":\s*(\d+)/);
+          if (ytMusicCountMatch) {
+            trackCount = parseInt(ytMusicCountMatch[1]);
+          }
+        }
+
+        if (!trackCount) {
+          // Look for track count in YouTube Music playlist data
+          const ytPlaylistMatch = html.match(
+            /"playlistItems":\s*\[\s*{\s*"length":\s*(\d+)/,
+          );
+          if (ytPlaylistMatch) {
+            trackCount = parseInt(ytPlaylistMatch[1]);
+          }
+        }
+
+        if (!trackCount) {
+          // Look for track count in playlist header
+          const playlistHeaderMatch = html.match(
+            /(\d+)\s*(?:songs?|tracks?|videos?)\s*in\s*this\s*playlist/i,
+          );
+          if (playlistHeaderMatch) {
+            trackCount = parseInt(playlistHeaderMatch[1]);
+          }
+        }
+
+        if (!trackCount) {
+          // Look for track count in meta description
+          const metaDescMatch = html.match(
+            /<meta[^>]*name=["']description["'][^>]*content=["'][^"]*(\d+)\s*(?:songs?|tracks?|videos?)/i,
+          );
+          if (metaDescMatch) {
+            trackCount = parseInt(metaDescMatch[1]);
+          }
         }
 
         // Look for track count in JSON-LD or other structured data
@@ -294,6 +368,31 @@ async function fetchYouTubeMusicPlaylistMetadata(url: string) {
             ownerName = ownerMatch[1];
           }
         }
+
+        // Try to extract artist name from title (for albums)
+        if (title && title !== "YouTube Music Playlist") {
+          // Look for "Album - Artist Name" pattern
+          const albumArtistMatch = title.match(/^Album\s*-\s*(.+)$/i);
+          if (albumArtistMatch) {
+            artistName = albumArtistMatch[1].trim();
+          } else {
+            // Look for "Artist Name - Album Name" pattern
+            const artistAlbumMatch = title.match(/^(.+?)\s*-\s*(.+)$/);
+            if (artistAlbumMatch) {
+              artistName = artistAlbumMatch[1].trim();
+            }
+          }
+        }
+
+        // Try to extract artist name from meta tags
+        if (!artistName) {
+          const metaArtistMatch = html.match(
+            /<meta\s+name="music:musician"\s+content="([^"]+)"/i,
+          );
+          if (metaArtistMatch && metaArtistMatch[1]) {
+            artistName = metaArtistMatch[1].trim();
+          }
+        }
       }
     } catch {
       // If scraping fails, continue with oEmbed data
@@ -306,8 +405,9 @@ async function fetchYouTubeMusicPlaylistMetadata(url: string) {
       title: title,
       description: "",
       thumbnailUrl: thumbnailUrl,
-      trackCount: trackCount,
+      trackCount: trackCount > 0 ? trackCount : undefined, // Only return track count if we found a valid one
       ownerName: ownerName,
+      artistName: artistName, // Include extracted artist name
       tracks: [],
     };
   } catch (error) {

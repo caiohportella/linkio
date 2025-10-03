@@ -54,7 +54,7 @@ export default defineSchema({
               name: v.string(),
               artist: v.string(),
               duration: v.optional(v.string()),
-              previewUrl: v.optional(v.string()),
+              previewUrl: v.optional(v.union(v.string(), v.null())),
             }),
           ),
         ),

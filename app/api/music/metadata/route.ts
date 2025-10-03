@@ -6,87 +6,139 @@ type MusicMetadata = {
   artworkUrl?: string;
 };
 
-async function fetchSpotifyMetadata(
+// Spotify Web API integration
+async function getSpotifyAccessToken(): Promise<string | null> {
+  try {
+    const clientId = process.env.SPOTIFY_CLIENT_ID;
+    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      console.warn("Spotify credentials not configured");
+      return null;
+    }
+
+    const response = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+      },
+      body: "grant_type=client_credentials",
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return data.access_token;
+  } catch (error) {
+    console.error("Failed to get Spotify access token:", error);
+    return null;
+  }
+}
+
+async function fetchSpotifyWebApiData(
   url: string,
 ): Promise<MusicMetadata | null> {
-  const endpoint = `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`;
-  const response = await fetch(endpoint, { cache: "no-store" });
-  if (!response.ok) return null;
-  const data = await response.json();
-
-  let artist: string | undefined = data?.author_name ?? undefined;
-
   try {
-    const embedUrl = url.replace("open.spotify.com", "open.spotify.com/embed");
-    const htmlResponse = await fetch(embedUrl, {
-      cache: "no-store",
+    const accessToken = await getSpotifyAccessToken();
+    if (!accessToken) return null;
+
+    // Extract ID from URL
+    const urlMatch = url.match(
+      /spotify\.com\/(album|track|playlist)\/([a-zA-Z0-9]+)/,
+    );
+    if (!urlMatch) return null;
+
+    const [, type, id] = urlMatch;
+    const apiUrl = `https://api.spotify.com/v1/${type}s/${id}`;
+
+    const response = await fetch(apiUrl, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.9",
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
-    if (htmlResponse.ok) {
-      const html = await htmlResponse.text();
+    if (!response.ok) return null;
 
-      const decodeHtml = (value?: string) =>
-        value ? value.replace(/\\u0026/g, "&").trim() : undefined;
+    const data = await response.json();
 
-      // Try multiple patterns to extract artist information
-      if (!artist) {
-        // Pattern 1: Look for artists array in JSON
-        const artistMatch = html.match(/"artists":\[\{"name":"([^\"]+)"/);
-        if (artistMatch && artistMatch[1]) {
-          artist = decodeHtml(artistMatch[1]) ?? artist;
-        }
-      }
+    if (type === "album") {
+      return {
+        title: data.name,
+        artist: data.artists?.[0]?.name,
+        artworkUrl: data.images?.[0]?.url,
+      };
+    } else if (type === "track") {
+      return {
+        title: data.name,
+        artist: data.artists?.[0]?.name,
+        artworkUrl: data.album?.images?.[0]?.url,
+      };
+    } else if (type === "playlist") {
+      return {
+        title: data.name,
+        artist: data.owner?.display_name,
+        artworkUrl: data.images?.[0]?.url,
+      };
+    }
 
-      if (!artist) {
-        // Pattern 2: Look for artist in different JSON structure
-        const artistMatch2 = html.match(/"artist":"([^\"]+)"/);
-        if (artistMatch2 && artistMatch2[1]) {
-          artist = decodeHtml(artistMatch2[1]) ?? artist;
-        }
-      }
+    return null;
+  } catch (error) {
+    console.error("Spotify Web API error:", error);
+    return null;
+  }
+}
 
-      if (!artist) {
-        // Pattern 3: Look for artist in title tag
-        const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
-        if (titleMatch) {
-          const titleText = titleMatch[1];
-          const byIndex = titleText.toLowerCase().indexOf(" by ");
-          if (byIndex !== -1) {
-            const afterBy = titleText
-              .slice(byIndex + 4)
-              .replace(/\|\s*spotify.*/i, "")
-              .trim();
-            if (afterBy) {
-              artist = decodeHtml(afterBy) ?? artist;
-            }
-          }
-        }
-      }
-
-      if (!artist) {
-        // Pattern 4: Look for artist in meta tags
-        const metaArtistMatch = html.match(
-          /<meta\s+name="music:musician"\s+content="([^"]+)"/i,
-        );
-        if (metaArtistMatch && metaArtistMatch[1]) {
-          artist = decodeHtml(metaArtistMatch[1]) ?? artist;
-        }
-      }
+async function fetchSpotifyMetadata(
+  url: string,
+): Promise<MusicMetadata | null> {
+  // Primary: Try Spotify Web API first for accurate data
+  try {
+    const spotifyData = await fetchSpotifyWebApiData(url);
+    if (spotifyData && spotifyData.artist && spotifyData.title) {
+      return spotifyData;
     }
   } catch (error) {
-    console.error("Spotify metadata HTML fallback failed", error);
+    console.error("Spotify Web API failed:", error);
   }
 
-  return {
-    title: data?.title ?? undefined,
-    artist,
-    artworkUrl: data?.thumbnail_url ?? undefined,
-  };
+  // Fallback: Use oEmbed API
+  try {
+    const endpoint = `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`;
+    const oembedResp = await fetch(endpoint, { cache: "no-store" });
+    if (!oembedResp.ok) return null;
+
+    const data = await oembedResp.json();
+    const result: MusicMetadata = {
+      title: data?.title ?? undefined,
+      artist: data?.author_name ?? undefined,
+      artworkUrl: data?.thumbnail_url ?? undefined,
+    };
+
+    // If oEmbed has complete data, return it
+    if (result.artist && result.title) {
+      return result;
+    }
+
+    // Try to enhance oEmbed data with Web API if available
+    try {
+      const spotifyData = await fetchSpotifyWebApiData(url);
+      if (spotifyData) {
+        return {
+          title: spotifyData.title || result.title,
+          artist: spotifyData.artist || result.artist,
+          artworkUrl: spotifyData.artworkUrl || result.artworkUrl,
+        };
+      }
+    } catch (error) {
+      console.error("Spotify Web API enhancement failed:", error);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Spotify oEmbed failed:", error);
+    return null;
+  }
 }
 
 async function fetchDeezerMetadata(url: string): Promise<MusicMetadata | null> {
@@ -258,27 +310,52 @@ async function fetchAppleMusicMetadata(
   url: string,
 ): Promise<MusicMetadata | null> {
   try {
-    // Try iTunes API first for some URLs
-    const endpoint = `https://itunes.apple.com/lookup?url=${encodeURIComponent(url)}`;
-    const response = await fetch(endpoint, { cache: "no-store" });
-    if (response.ok) {
-      const data = await response.json();
-      const item = data?.results?.[0];
-      if (item) {
-        const artwork =
-          item.artworkUrl100 ?? item.artworkUrl60 ?? item.artworkUrl512;
-        return {
-          title:
-            item.trackName ??
-            item.collectionName ??
-            item.playlistName ??
-            undefined,
-          artist: item.artistName ?? undefined,
-          artworkUrl:
-            typeof artwork === "string"
-              ? artwork.replace("100x100", "600x600")
-              : undefined,
-        };
+    // Extract region and ID from URL for iTunes API lookup
+    const regionMatch = url.match(/music\.apple\.com\/([a-z]{2})\//);
+    const region = regionMatch ? regionMatch[1] : "us";
+
+    // Try to extract track/album/playlist ID for iTunes API
+    const trackMatch = url.match(/\/song\/[^/]+\/(\d+)(?:\?i=(\d+))?/);
+    const albumMatch = url.match(/\/album\/[^/]+\/(\d+)/);
+    const playlistMatch = url.match(/\/playlist\/[^/]+\/([a-zA-Z0-9.-]+)/);
+
+    let entityId: string | null = null;
+    let entityType: string | null = null;
+
+    if (trackMatch) {
+      entityId = trackMatch[2] || trackMatch[1]; // Use track ID if available, otherwise album ID
+      entityType = "song";
+    } else if (albumMatch) {
+      entityId = albumMatch[1];
+      entityType = "album";
+    } else if (playlistMatch) {
+      // For playlists, we'll skip iTunes API and go directly to scraping
+      entityId = null;
+    }
+
+    // Try iTunes API for tracks and albums
+    if (entityId && entityType && entityType !== "playlist") {
+      const endpoint = `https://itunes.apple.com/lookup?id=${entityId}&entity=${entityType}&country=${region}`;
+      const response = await fetch(endpoint, { cache: "no-store" });
+      if (response.ok) {
+        const data = await response.json();
+        const item = data?.results?.[0];
+        if (item) {
+          const artwork =
+            item.artworkUrl100 ?? item.artworkUrl60 ?? item.artworkUrl512;
+          return {
+            title:
+              item.trackName ??
+              item.collectionName ??
+              item.playlistName ??
+              undefined,
+            artist: item.artistName ?? undefined,
+            artworkUrl:
+              typeof artwork === "string"
+                ? artwork.replace("100x100", "600x600")
+                : undefined,
+          };
+        }
       }
     }
   } catch (error) {
@@ -715,10 +792,11 @@ async function fetchYouTubeMusicMetadata(
     const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
     if (titleMatch) {
       const titleText = titleMatch[1];
-      // Remove YouTube Music branding
+      // Remove YouTube Music branding and handle album prefix
       title = titleText
         .replace(/\|\s*YouTube\s*Music.*$/i, "")
         .replace(/\s*-\s*YouTube\s*Music.*$/i, "")
+        .replace(/^Album\s*-\s*/i, "") // Remove "Album -" prefix
         .trim();
     }
 
@@ -727,7 +805,7 @@ async function fetchYouTubeMusicMetadata(
       // Pattern 1: Look for JSON-LD structured data
       const jsonLdMatch = html.match(/"name":\s*"([^"]+)"/i);
       if (jsonLdMatch && jsonLdMatch[1] && jsonLdMatch[1] !== "YouTube Music") {
-        title = jsonLdMatch[1].trim();
+        title = jsonLdMatch[1].replace(/^Album\s*-\s*/i, "").trim();
       }
     }
 
@@ -741,7 +819,7 @@ async function fetchYouTubeMusicMetadata(
         ogTitleMatch[1] &&
         ogTitleMatch[1] !== "YouTube Music"
       ) {
-        title = ogTitleMatch[1].trim();
+        title = ogTitleMatch[1].replace(/^Album\s*-\s*/i, "").trim();
       }
     }
 
@@ -749,7 +827,7 @@ async function fetchYouTubeMusicMetadata(
       // Pattern 3: Look for h1 tag
       const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
       if (h1Match && h1Match[1] && h1Match[1] !== "YouTube Music") {
-        title = h1Match[1].trim();
+        title = h1Match[1].replace(/^Album\s*-\s*/i, "").trim();
       }
     }
 

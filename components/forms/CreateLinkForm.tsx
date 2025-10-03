@@ -124,10 +124,10 @@ const formSchema = z
     scheduledAt: z.number().nullable().optional(),
   })
   .superRefine((data, ctx) => {
-    if (!data.url && (!data.musicLinks || data.musicLinks.length === 0)) {
+    if (!data.url && (!data.musicLinks || data.musicLinks.length === 0) && !data.playlistPreview) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Either a URL or at least one music link is required.",
+        message: "Either a URL, music link, or playlist is required.",
         path: ["url"],
       });
     }
@@ -225,6 +225,7 @@ const CreateLinkForm = () => {
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log("Form submitted with values:", values);
     setError(null);
 
     startSubmitting(async () => {
@@ -244,9 +245,12 @@ const CreateLinkForm = () => {
               ? undefined
               : (values.scheduledAt ?? undefined),
         };
+        console.log("Calling createLink with data:", linkData);
         await createLink(linkData);
+        console.log("Link created successfully, redirecting to dashboard");
         router.push("/dashboard");
       } catch (err) {
+        console.error("Error creating link:", err);
         setError(err instanceof Error ? err.message : "Failed to create link");
       }
     });
@@ -627,8 +631,10 @@ const CreateLinkForm = () => {
         handleRemoveMusicLink={handleRemoveMusicLink}
         showExistingLinksOnOpen={musicLinks.length > 0 && !editingMusicLink} // Pass the new prop
         onPlaylistAdded={(playlist) => {
+          console.log("Playlist added to form:", playlist);
           form.setValue("playlistPreview", playlist);
           form.setValue("url", playlist.url);
+          toast.success(`Playlist "${playlist.title}" added successfully!`);
         }}
       />
       <MediaPreviewModal

@@ -1,7 +1,7 @@
 "use client";
 
 import { Doc } from "@/convex/_generated/dataModel";
-import { SUPPORTED_MUSIC_PLATFORMS } from "@/lib/utils";
+import { SUPPORTED_MUSIC_PLATFORMS, getBaseUrl } from "@/lib/utils";
 import Image from "next/image";
 import {
   ComponentType,
@@ -10,7 +10,7 @@ import {
   useRef,
   useEffect,
 } from "react";
-import { ArrowUpRight, Play, Pause } from "lucide-react";
+import { ArrowUpRight, Play, Pause, ChevronDown, ChevronRight, Music } from "lucide-react";
 import Link from "next/link";
 import { trackLinkClick } from "@/lib/analytics";
 import { useParams } from "next/navigation";
@@ -23,6 +23,8 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const params = useParams();
   const username = params.username as string;
@@ -39,6 +41,12 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
         handleMusicLinkClick(firstMusicLink);
       }
     }
+  };
+
+  // Reset error state when user tries to play again
+  const resetErrorState = () => {
+    setHasError(false);
+    setIsLoading(false);
   };
 
   const handleMusicLinkClick = async (musicLink: {
@@ -65,10 +73,19 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
     trackId: string,
   ): Promise<string | null> => {
     try {
-      const response = await fetch(`/api/spotify/preview?trackId=${trackId}`);
+      console.log("Fetching Spotify preview for track ID:", trackId);
+      const apiUrl = `${getBaseUrl()}/api/spotify/preview?trackId=${trackId}`;
+      console.log("Using API URL:", apiUrl);
+      const response = await fetch(apiUrl);
+      console.log("Spotify API response status:", response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log("Spotify API response data:", data);
         return data.previewUrl;
+      } else {
+        const errorData = await response.json();
+        console.error("Spotify API error:", errorData);
       }
     } catch (error) {
       console.error("Failed to fetch Spotify preview:", error);
@@ -79,39 +96,85 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
   // Handle play/pause functionality
   const handlePlayPause = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card expansion when clicking play button
+    console.log("Play button clicked, isPlaying:", isPlaying);
 
     if (isPlaying) {
       // Pause
       if (audioRef.current) {
         audioRef.current.pause();
         setIsPlaying(false);
+        console.log("Paused audio");
       }
     } else {
+      // Reset error state when trying to play
+      resetErrorState();
+      
       // Play
       if (!previewUrl) {
+        console.log("No preview URL, fetching...");
+        setIsLoading(true);
+        
         // Find Spotify link and get preview URL
         const spotifyLink = link.musicLinks?.find(
           (ml) => ml.platform === "Spotify",
         );
+        console.log("Spotify link found:", spotifyLink);
+        
         if (spotifyLink) {
           const trackId = getSpotifyTrackId(spotifyLink.url);
+          console.log("Extracted track ID:", trackId);
+          
           if (trackId) {
-            const preview = await fetchSpotifyPreview(trackId);
-            if (preview) {
-              setPreviewUrl(preview);
-              if (audioRef.current) {
-                audioRef.current.src = preview;
-                audioRef.current.play();
-                setIsPlaying(true);
+            try {
+              const preview = await fetchSpotifyPreview(trackId);
+              console.log("Preview URL received:", preview);
+              
+              if (preview) {
+                setPreviewUrl(preview);
+                if (audioRef.current) {
+                  audioRef.current.src = preview;
+                  audioRef.current.load(); // Ensure the audio is loaded
+                  try {
+                    await audioRef.current.play();
+                    setIsPlaying(true);
+                    setIsLoading(false);
+                    console.log("Audio started playing");
+                  } catch (playError) {
+                    console.error("Error playing audio:", playError);
+                    setIsLoading(false);
+                    setHasError(true);
+                  }
+                }
+              } else {
+                console.log("No preview available for this track");
+                setIsLoading(false);
+                setHasError(true);
               }
+            } catch (error) {
+              console.error("Error fetching preview:", error);
+              setIsLoading(false);
+              setHasError(true);
             }
+          } else {
+            setIsLoading(false);
+            setHasError(true);
           }
+        } else {
+          setIsLoading(false);
+          setHasError(true);
         }
       } else {
         // Resume existing preview
+        console.log("Resuming existing preview");
         if (audioRef.current) {
-          audioRef.current.play();
-          setIsPlaying(true);
+          try {
+            await audioRef.current.play();
+            setIsPlaying(true);
+            console.log("Audio resumed");
+          } catch (playError) {
+            console.error("Error resuming audio:", playError);
+            setHasError(true);
+          }
         }
       }
     }
@@ -175,9 +238,25 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
           {link.musicLinks?.some((ml) => ml.platform === "Spotify") && (
             <button
               onClick={handlePlayPause}
-              className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-black/50"
+              title={
+                hasError 
+                  ? "Preview not available" 
+                  : isLoading 
+                    ? "Loading preview..." 
+                    : isPlaying 
+                      ? "Pause preview" 
+                      : "Play preview"
+              }
+              disabled={isLoading}
             >
-              {isPlaying ? (
+              {isLoading ? (
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : hasError ? (
+                <div className="w-6 h-6 text-white flex items-center justify-center">
+                  <span className="text-xs">!</span>
+                </div>
+              ) : isPlaying ? (
                 <Pause className="w-6 h-6 text-white" />
               ) : (
                 <Play className="w-6 h-6 text-white ml-1" />
@@ -218,12 +297,12 @@ const MusicCard: React.FC<MusicCardProps> = ({ link }) => {
         <div className="ml-4 text-slate-400 group-hover:text-slate-600 transition-all duration-200">
           {hasMultipleMusicLinks ? (
             isExpanded ? (
-              <ArrowUpRight className="w-6 h-6 rotate-90" />
+              <ChevronDown className="w-5 h-5" />
             ) : (
-              <ArrowUpRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5" />
             )
           ) : (
-            <ArrowUpRight className="w-6 h-6" />
+            <Music className="w-5 h-5" />
           )}
         </div>
       </div>

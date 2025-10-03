@@ -58,8 +58,8 @@ export interface TinybirdLinkAnalyticsRow {
 }
 
 export interface TinybirdCountryAnalyticsRow {
-  country: string,
-  total_clicks: number,
-  unique_users: number,
-  percentage: number
+  country: string;
+  total_clicks: number;
+  unique_users: number;
+  percentage: number;
 }

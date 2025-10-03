@@ -38,6 +38,28 @@ export default defineSchema({
         thumbnailUrl: v.string(),
       }),
     ),
+    playlistPreview: v.optional(
+      v.object({
+        platform: v.string(),
+        url: v.string(),
+        playlistId: v.string(),
+        title: v.string(),
+        description: v.optional(v.string()),
+        thumbnailUrl: v.optional(v.string()),
+        trackCount: v.optional(v.number()),
+        ownerName: v.optional(v.string()),
+        tracks: v.optional(
+          v.array(
+            v.object({
+              name: v.string(),
+              artist: v.string(),
+              duration: v.optional(v.string()),
+              previewUrl: v.optional(v.string()),
+            }),
+          ),
+        ),
+      }),
+    ),
     scheduledAt: v.optional(v.number()),
     folderId: v.optional(v.id("folders")), // New field to associate links with folders
   })

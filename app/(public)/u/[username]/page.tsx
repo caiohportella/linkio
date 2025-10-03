@@ -11,31 +11,35 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ username: string }>;
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }> | undefined;
+  searchParams?:
+    | Promise<{ [key: string]: string | string[] | undefined }>
+    | undefined;
 }): Promise<Metadata> {
   const { username } = await params;
   const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
-  const preloadedCustomizationsData: CustomizationsWithUrl | null = await client.query(
-    api.lib.userCustomizations.getCustomizationsBySlug,
-    { slug: username },
-  );
+  const preloadedCustomizationsData: CustomizationsWithUrl | null =
+    await client.query(api.lib.userCustomizations.getCustomizationsBySlug, {
+      slug: username,
+    });
 
   const title = username
     ? `${username}'s Linkio | Personal Profile`
     : "Linkio Profile";
-  const description = preloadedCustomizationsData?.description || "My personalized link-in-bio page.";
-  
+  const description =
+    preloadedCustomizationsData?.description ||
+    "My personalized link-in-bio page.";
+
   // Handle profile picture URL properly
   let imageUrl = `${getBaseUrl()}/logo.png`; // Default fallback with full URL
-  
+
   if (preloadedCustomizationsData?.profilePictureUrl) {
     // If it's already a full URL, use it as is
-    if (preloadedCustomizationsData.profilePictureUrl.startsWith('http')) {
+    if (preloadedCustomizationsData.profilePictureUrl.startsWith("http")) {
       imageUrl = preloadedCustomizationsData.profilePictureUrl;
     } else {
       // If it's a relative URL, make it absolute
-      imageUrl = preloadedCustomizationsData.profilePictureUrl.startsWith('/')
+      imageUrl = preloadedCustomizationsData.profilePictureUrl.startsWith("/")
         ? `${getBaseUrl()}${preloadedCustomizationsData.profilePictureUrl}`
         : `${getBaseUrl()}/${preloadedCustomizationsData.profilePictureUrl}`;
     }
@@ -80,7 +84,9 @@ const PublicLinkInBioPage = async ({
   params,
 }: {
   params: Promise<{ username: string }>;
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }> | undefined;
+  searchParams?:
+    | Promise<{ [key: string]: string | string[] | undefined }>
+    | undefined;
 }) => {
   const { username } = await params;
   const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -93,17 +99,18 @@ const PublicLinkInBioPage = async ({
     notFound();
   }
 
-  const [preloadedLinks, preloadedCustomizations, preloadedFolders] = await Promise.all([
-    preloadQuery(api.lib.links.getLinksBySlug, {
-      slug: username,
-    }),
-    preloadQuery(api.lib.userCustomizations.getCustomizationsBySlug, {
-      slug: username,
-    }),
-    preloadQuery(api.lib.folders.getFoldersByUserId, {
-      userId,
-    }),
-  ]);
+  const [preloadedLinks, preloadedCustomizations, preloadedFolders] =
+    await Promise.all([
+      preloadQuery(api.lib.links.getLinksBySlug, {
+        slug: username,
+      }),
+      preloadQuery(api.lib.userCustomizations.getCustomizationsBySlug, {
+        slug: username,
+      }),
+      preloadQuery(api.lib.folders.getFoldersByUserId, {
+        userId,
+      }),
+    ]);
 
   return (
     <PublicPageContent

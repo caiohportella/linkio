@@ -7,7 +7,6 @@
 
   <img alt="user page" src="https://github.com/user-attachments/assets/cae39e09-0567-4bb1-bed7-eb535473882b" />
 
-
   <br />
 
   <div>

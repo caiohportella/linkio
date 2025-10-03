@@ -1,18 +1,29 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Zap, Link2, Smartphone, ShieldCheck, Palette, BarChart2, Globe, Settings } from "lucide-react";
+import {
+  Zap,
+  Link2,
+  Smartphone,
+  ShieldCheck,
+  Palette,
+  BarChart2,
+  Globe,
+  Settings,
+} from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 
 const features = [
   {
     title: "Instant Setup",
-    description: "Create and share your link in under a minute. No fuss, no coding.",
+    description:
+      "Create and share your link in under a minute. No fuss, no coding.",
     icon: Zap,
   },
   {
     title: "Unified Links",
-    description: "Bring all your content together in one place — social, portfolio, store, and more.",
+    description:
+      "Bring all your content together in one place — social, portfolio, store, and more.",
     icon: Link2,
   },
   {
@@ -22,7 +33,8 @@ const features = [
   },
   {
     title: "Privacy & Security",
-    description: "Your data is protected with industry-leading security and privacy standards.",
+    description:
+      "Your data is protected with industry-leading security and privacy standards.",
     icon: ShieldCheck,
   },
   {
@@ -32,7 +44,8 @@ const features = [
   },
   {
     title: "Analytics",
-    description: "Track clicks and engagement with real-time analytics and insights.",
+    description:
+      "Track clicks and engagement with real-time analytics and insights.",
     icon: BarChart2,
   },
   {

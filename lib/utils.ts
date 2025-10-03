@@ -4,6 +4,7 @@ import {
   SiInstagram,
   SiTiktok,
   SiYoutube,
+  SiYoutubemusic,
   SiLinkedin,
   SiGithub,
   SiWhatsapp,
@@ -16,6 +17,7 @@ import {
   SiSteam,
   SiDuolingo,
   SiVsco,
+  SiTelegram,
 } from "react-icons/si";
 import { RiTwitterXFill, RiThreadsFill } from "react-icons/ri";
 import { FaDeezer, FaAmazon, FaApple } from "react-icons/fa";
@@ -24,7 +26,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDateTime(timestamp: number, options?: Intl.DateTimeFormatOptions) {
+export function formatDateTime(
+  timestamp: number,
+  options?: Intl.DateTimeFormatOptions,
+) {
   const date = new Date(timestamp);
   return date.toLocaleString(undefined, {
     year: "numeric",
@@ -179,6 +184,12 @@ export const SUPPORTED_SOCIALS = [
     brandColor: "#FF4500",
   },
   {
+    name: "Telegram",
+    icon: SiTelegram,
+    baseUrl: "https://t.me/",
+    brandColor: "#0088CC",
+  },
+  {
     name: "Steam",
     icon: SiSteam,
     baseUrl: "https://steamcommunity.com/id/",
@@ -240,7 +251,7 @@ export const SUPPORTED_MUSIC_PLATFORMS = [
         label: "Track Link",
         placeholder: "e.g., 1440843428?i=1440843433",
         urlPattern:
-          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/song\/[^/]+\/\d+\?i=\d+/,
+          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/song\/[^/]+\/\d+(?:\?i=\d+)?/,
         baseUrl: "https://music.apple.com/br/song/",
       },
       {
@@ -269,23 +280,23 @@ export const SUPPORTED_MUSIC_PLATFORMS = [
       {
         type: "track",
         label: "Track Link",
-        placeholder: "e.g., 123456789",
-        urlPattern: /^https?:\/\/(www\.)?deezer\.com\/track\/\d+/,
-        baseUrl: "https://www.deezer.com/track/",
+        placeholder: "e.g., link.deezer.com/s/...",
+        urlPattern: /^https?:\/\/link\.deezer\.com\/s\/[A-Za-z0-9]+/,
+        baseUrl: "https://link.deezer.com/s/",
       },
       {
         type: "album",
         label: "Album Link",
-        placeholder: "e.g., 987654321",
-        urlPattern: /^https?:\/\/(www\.)?deezer\.com\/album\/\d+/,
-        baseUrl: "https://www.deezer.com/album/",
+        placeholder: "e.g., link.deezer.com/s/...",
+        urlPattern: /^https?:\/\/link\.deezer\.com\/s\/[A-Za-z0-9]+/,
+        baseUrl: "https://link.deezer.com/s/",
       },
       {
         type: "playlist",
         label: "Playlist Link",
-        placeholder: "e.g., 543219876",
-        urlPattern: /^https?:\/\/(www\.)?deezer\.com\/playlist\/\d+/,
-        baseUrl: "https://www.deezer.com/playlist/",
+        placeholder: "e.g., link.deezer.com/s/...",
+        urlPattern: /^https?:\/\/link\.deezer\.com\/s\/[A-Za-z0-9]+/,
+        baseUrl: "https://link.deezer.com/s/",
       },
     ],
   },
@@ -305,7 +316,8 @@ export const SUPPORTED_MUSIC_PLATFORMS = [
         type: "album",
         label: "Album Link",
         placeholder: "e.g., 987654321",
-        urlPattern: /^https?:\/\/(www\.)?tidal\.com\/album\/[A-Za-z0-9]+(?:\/.*)?/,
+        urlPattern:
+          /^https?:\/\/(www\.)?tidal\.com\/album\/[A-Za-z0-9]+(?:\/.*)?/,
         baseUrl: "https://tidal.com/album/",
       },
       {
@@ -325,40 +337,48 @@ export const SUPPORTED_MUSIC_PLATFORMS = [
       {
         type: "track",
         label: "Track Link",
-        placeholder: "e.g., B08Z2Y2G3X",
+        placeholder: "e.g., B0D4MHK5GR?trackAsin=B0D4MG65CV",
         urlPattern:
-          /^https?:\/\/(music\.amazon\.com|www\.amazon\.[a-z]{2,3})\/albums\/[a-zA-Z0-9]+\/B0[a-zA-Z0-9]+(?:\?|$)/,
-        baseUrl: "https://music.amazon.com/albums/",
+          /^https?:\/\/(?:music\.amazon\.com|www\.amazon)\.[a-z]{2,3}\/albums\/B0[a-zA-Z0-9]+\?.*trackAsin=B0[a-zA-Z0-9]+/,
+        baseUrl: "https://music.amazon.com.br/albums/",
       },
       {
         type: "album",
         label: "Album Link",
-        placeholder: "e.g., B08Z2Y2G3X",
+        placeholder: "e.g., B0D4MHK5GR",
         urlPattern:
-          /^https?:\/\/(music\.amazon\.com|www\.amazon\.[a-z]{2,3})\/albums\/B0[a-zA-Z0-9]+(?:\?|$)/,
-        baseUrl: "https://music.amazon.com/albums/",
+          /^https?:\/\/(?:music\.amazon\.com|www\.amazon)\.[a-z]{2,3}\/albums\/B0[a-zA-Z0-9]+(?:\?|$)/,
+        baseUrl: "https://music.amazon.com.br/albums/",
       },
       {
         type: "playlist",
         label: "Playlist Link",
-        placeholder: "e.g., 37i9dQZF1DXcBWIGoYBM5M",
+        placeholder: "e.g., B0FNH75VSB",
         urlPattern:
-          /^https?:\/\/(music\.amazon\.com|www\.amazon\.[a-z]{2,3})\/playlists\/[a-zA-Z0-9]+(?:\?|$)/,
-        baseUrl: "https://music.amazon.com/playlists/",
+          /^https?:\/\/(?:music\.amazon\.com|www\.amazon)\.[a-z]{2,3}\/playlists\/B0[a-zA-Z0-9]+(?:\?|$)/,
+        baseUrl: "https://music.amazon.com.br/playlists/",
       },
     ],
   },
   {
-    name: "YouTube",
-    icon: SiYoutube,
+    name: "YouTube Music",
+    icon: SiYoutubemusic,
     brandColor: "#FF0000",
     linkTypes: [
       {
-        type: "video",
-        label: "Video Link",
-        placeholder: "e.g., dQw4w9WgXcQ",
-        urlPattern: /^https?:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]+/,
-        baseUrl: "https://www.youtube.com/watch?v=",
+        type: "track",
+        label: "Track Link",
+        placeholder: "e.g., LTnm6vv3Hp0",
+        urlPattern: /^https?:\/\/music\.youtube\.com\/watch\?v=[a-zA-Z0-9_-]+/,
+        baseUrl: "https://music.youtube.com/watch?v=",
+      },
+      {
+        type: "playlist",
+        label: "Playlist/Album Link",
+        placeholder: "e.g., OLAK5uy_kqc29SUksz2bfmMuKVtIzn_-LuTd6aCpE",
+        urlPattern:
+          /^https?:\/\/music\.youtube\.com\/playlist\?list=[a-zA-Z0-9_-]+/,
+        baseUrl: "https://music.youtube.com/playlist?list=",
       },
     ],
   },
@@ -369,6 +389,37 @@ export function hexToRgba(hex: string, alpha: number) {
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+export function extractAppleMusicRegion(url: string): string | null {
+  const match = url.match(/^https?:\/\/music\.apple\.com\/([a-z]{2})\//);
+  return match ? match[1] : null;
+}
+
+export function buildAppleMusicUrl(
+  region: string,
+  type: string,
+  path: string,
+): string {
+  return `https://music.apple.com/${region}/${type}/${path}`;
+}
+
+export function extractAmazonMusicRegion(url: string): string | null {
+  // Handle music.amazon.com (US) and music.amazon.com.xx (other regions)
+  const match = url.match(
+    /^https?:\/\/(?:music\.amazon\.com(?:\.([a-z]{2,3}))?|www\.amazon\.([a-z]{2,3}))/,
+  );
+  return match ? match[1] || match[2] || "us" : null;
+}
+
+export function buildAmazonMusicUrl(
+  region: string,
+  type: string,
+  id: string,
+): string {
+  const domain =
+    region === "us" ? "music.amazon.com" : `music.amazon.com.${region}`;
+  return `https://${domain}/${type}s/${id}`;
 }
 
 export type MusicLinkItem = {

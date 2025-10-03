@@ -15,6 +15,7 @@ import Image from "next/image";
 import { MediaPreview } from "@/lib/utils";
 import { createElement, ComponentType } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SiYoutube } from "react-icons/si";
 
 const sanitizeMediaPreview = (
   value: Doc<"links">["mediaPreview"] | undefined,
@@ -126,12 +127,12 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                   key={folder._id}
                   onClick={() => setActiveFolderId(folder._id)}
                   className="cursor-pointer flex items-center justify-between w-full p-4 bg-white/70 border border-slate-200/50 rounded-2xl"
-                  whileHover={{ 
-                    scale: 1.02, 
+                  whileHover={{
+                    scale: 1.02,
                     y: -2,
                     backgroundColor: "rgba(255, 255, 255, 0.9)",
                     borderColor: "rgba(148, 163, 184, 0.3)",
-                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
                   }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -157,19 +158,25 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                         href={mediaPreview.url}
                         target="_blank"
                         className="group block w-full cursor-pointer"
-                        onClick={() => handleMediaPreviewClick(link, mediaPreview)}
+                        onClick={() =>
+                          handleMediaPreviewClick(link, mediaPreview)
+                        }
                       >
-                        <motion.div 
+                        <motion.div
                           className="relative bg-white/70 border border-slate-200/50 rounded-2xl overflow-hidden"
-                          whileHover={{ 
-                            scale: 1.02, 
+                          whileHover={{
+                            scale: 1.02,
                             y: -2,
                             backgroundColor: "rgba(255, 255, 255, 0.9)",
                             borderColor: "rgba(148, 163, 184, 0.3)",
-                            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
                           }}
                           whileTap={{ scale: 0.98 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 25,
+                          }}
                         >
                           <div className="relative w-full pb-[56.25%]">
                             <Image
@@ -186,15 +193,9 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                                   {mediaPreview.title}
                                 </h3>
                                 <div className="flex items-center text-xs text-slate-400 group-hover:text-slate-500 transition-colors duration-200">
-                                  {SUPPORTED_MUSIC_PLATFORMS.find((p) => p.name === "YouTube")?.icon && (
-                                    <span className="mr-1">
-                                      {createElement(
-                                        (SUPPORTED_MUSIC_PLATFORMS.find((p) => p.name === "YouTube")?.icon as ComponentType<{ className?: string }> | undefined) ??
-                                          (() => null),
-                                        { className: "w-3 h-3" },
-                                      )}
-                                    </span>
-                                  )}
+                                  <span className="mr-1">
+                                    <SiYoutube className="w-3 h-3" />
+                                  </span>
                                   YouTube
                                 </div>
                               </div>
@@ -207,7 +208,62 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                       </Link>
                     );
                   }
-                  if (link.musicLinks && link.musicLinks.length > 0) {
+                  if (link.playlistPreview) {
+                    return (
+                      <motion.div
+                        key={link._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="rounded-2xl border border-border bg-card p-4 hover:bg-accent/5 transition-colors"
+                      >
+                        <Link
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() =>
+                            trackLinkClick({
+                              profileUsername: username,
+                              linkId: link._id,
+                              linkTitle:
+                                link.playlistPreview?.title || "Playlist",
+                              linkUrl: link.url,
+                            })
+                          }
+                          className="flex items-center gap-4"
+                        >
+                          <div className="relative w-16 h-16 overflow-hidden rounded-xl bg-slate-100 flex-shrink-0">
+                            {link.playlistPreview.thumbnailUrl ? (
+                              <Image
+                                src={link.playlistPreview.thumbnailUrl}
+                                alt={link.playlistPreview.title}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-2xl">🎵</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">
+                              {link.playlistPreview.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {link.playlistPreview.ownerName ||
+                                "Unknown Owner"}{" "}
+                              • {link.playlistPreview.trackCount || 0} songs
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {link.playlistPreview.platform}
+                            </p>
+                          </div>
+                          <ArrowUpRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        </Link>
+                      </motion.div>
+                    );
+                  } else if (link.musicLinks && link.musicLinks.length > 0) {
                     return <MusicCard key={link._id} link={link} />;
                   } else {
                     return (
@@ -218,23 +274,28 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                         className="group block w-full cursor-pointer"
                         onClick={() => handleLinkClick(link)}
                       >
-                        <motion.div 
+                        <motion.div
                           className="relative bg-white/70 border border-slate-200/50 rounded-2xl overflow-hidden"
-                          whileHover={{ 
-                            scale: 1.02, 
+                          whileHover={{
+                            scale: 1.02,
                             y: -2,
                             backgroundColor: "rgba(255, 255, 255, 0.9)",
                             borderColor: "rgba(148, 163, 184, 0.3)",
-                            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
                           }}
                           whileTap={{ scale: 0.98 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 25,
+                          }}
                         >
                           {/* Hover Gradient */}
-                          <motion.div 
+                          <motion.div
                             className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-purple-50/0 to-blue-50/0 rounded-2xl"
                             whileHover={{
-                              background: "linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(59, 130, 246, 0.1))"
+                              background:
+                                "linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(59, 130, 246, 0.1))",
                             }}
                             transition={{ duration: 0.3 }}
                           />
@@ -285,19 +346,25 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                       href={mediaPreview.url}
                       target="_blank"
                       className="group block w-full cursor-pointer"
-                      onClick={() => handleMediaPreviewClick(link, mediaPreview)}
+                      onClick={() =>
+                        handleMediaPreviewClick(link, mediaPreview)
+                      }
                     >
-                      <motion.div 
+                      <motion.div
                         className="relative bg-white/70 border border-slate-200/50 rounded-2xl overflow-hidden"
-                        whileHover={{ 
-                          scale: 1.02, 
+                        whileHover={{
+                          scale: 1.02,
                           y: -2,
                           backgroundColor: "rgba(255, 255, 255, 0.9)",
                           borderColor: "rgba(148, 163, 184, 0.3)",
-                          boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
+                          boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
                         }}
                         whileTap={{ scale: 0.98 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 25,
+                        }}
                       >
                         <div className="relative w-full pb-[56.25%]">
                           <Image
@@ -314,11 +381,16 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                                 {mediaPreview.title}
                               </h3>
                               <div className="flex items-center text-xs text-slate-400 group-hover:text-slate-500 transition-colors duration-200">
-                                {SUPPORTED_MUSIC_PLATFORMS.find((p) => p.name === "YouTube")?.icon && (
+                                {SUPPORTED_MUSIC_PLATFORMS.find(
+                                  (p) => p.name === "YouTube",
+                                )?.icon && (
                                   <span className="mr-1">
                                     {createElement(
-                                      (SUPPORTED_MUSIC_PLATFORMS.find((p) => p.name === "YouTube")?.icon as ComponentType<{ className?: string }> | undefined) ??
-                                        (() => null),
+                                      (SUPPORTED_MUSIC_PLATFORMS.find(
+                                        (p) => p.name === "YouTube",
+                                      )?.icon as
+                                        | ComponentType<{ className?: string }>
+                                        | undefined) ?? (() => null),
                                       { className: "w-3 h-3" },
                                     )}
                                   </span>
@@ -335,58 +407,117 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                     </Link>
                   );
                 }
-        if (link.musicLinks && link.musicLinks.length > 0) {
-          return <MusicCard key={link._id} link={link} />;
-        } else {
-          return (
-            <Link
-              key={link._id}
-              href={link.url}
-              target="_blank"
+                if (link.playlistPreview) {
+                  return (
+                    <motion.div
+                      key={link._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="rounded-2xl border border-border bg-card p-4 hover:bg-accent/5 transition-colors"
+                    >
+                      <Link
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() =>
+                          trackLinkClick({
+                            profileUsername: username,
+                            linkId: link._id,
+                            linkTitle:
+                              link.playlistPreview?.title || "Playlist",
+                            linkUrl: link.url,
+                          })
+                        }
+                        className="flex items-center gap-4"
+                      >
+                        <div className="relative w-16 h-16 overflow-hidden rounded-xl bg-slate-100 flex-shrink-0">
+                          {link.playlistPreview.thumbnailUrl ? (
+                            <Image
+                              src={link.playlistPreview.thumbnailUrl}
+                              alt={link.playlistPreview.title}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <span className="text-2xl">🎵</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {link.playlistPreview.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {link.playlistPreview.ownerName || "Unknown Owner"}{" "}
+                            • {link.playlistPreview.trackCount || 0} songs
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {link.playlistPreview.platform}
+                          </p>
+                        </div>
+                        <ArrowUpRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      </Link>
+                    </motion.div>
+                  );
+                } else if (link.musicLinks && link.musicLinks.length > 0) {
+                  return <MusicCard key={link._id} link={link} />;
+                } else {
+                  return (
+                    <Link
+                      key={link._id}
+                      href={link.url}
+                      target="_blank"
                       className="group block w-full cursor-pointer"
-              onClick={() => handleLinkClick(link)}
-            >
-              <motion.div 
-                className="relative bg-white/70 border border-slate-200/50 rounded-2xl overflow-hidden"
-                whileHover={{ 
-                  scale: 1.02, 
-                  y: -2,
-                  backgroundColor: "rgba(255, 255, 255, 0.9)",
-                  borderColor: "rgba(148, 163, 184, 0.3)",
-                  boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)"
-                }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              >
-                {/* Hover Gradient */}
-                <motion.div 
-                  className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-purple-50/0 to-blue-50/0 rounded-2xl"
-                  whileHover={{
-                    background: "linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(59, 130, 246, 0.1))"
-                  }}
-                  transition={{ duration: 0.3 }}
-                />
+                      onClick={() => handleLinkClick(link)}
+                    >
+                      <motion.div
+                        className="relative bg-white/70 border border-slate-200/50 rounded-2xl overflow-hidden"
+                        whileHover={{
+                          scale: 1.02,
+                          y: -2,
+                          backgroundColor: "rgba(255, 255, 255, 0.9)",
+                          borderColor: "rgba(148, 163, 184, 0.3)",
+                          boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 25,
+                        }}
+                      >
+                        {/* Hover Gradient */}
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-blue-50/0 via-purple-50/0 to-blue-50/0 rounded-2xl"
+                          whileHover={{
+                            background:
+                              "linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1), rgba(59, 130, 246, 0.1))",
+                          }}
+                          transition={{ duration: 0.3 }}
+                        />
 
-                <div className="relative p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-slate-900 group-hover:text-slate-800 transition-colors duration-200 mb-1">
-                        {link.title}
-                      </h3>
-                      <p className="text-xs italic text-slate-400 group-hover:text-slate-500 transition-colors duration-200 truncate font-normal">
-                        {link.url.replace(/^https?:\/\//, "")}
-                      </p>
-                    </div>
-                    <div className="ml-4 text-slate-400 group-hover:text-slate-600 transition-all duration-200 group-hover:translate-x-0.5">
-                      <ArrowUpRight className="w-5 h-5" />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </Link>
-          );
-        }
-      })}
+                        <div className="relative p-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-lg font-bold text-slate-900 group-hover:text-slate-800 transition-colors duration-200 mb-1">
+                                {link.title}
+                              </h3>
+                              <p className="text-xs italic text-slate-400 group-hover:text-slate-500 transition-colors duration-200 truncate font-normal">
+                                {link.url.replace(/^https?:\/\//, "")}
+                              </p>
+                            </div>
+                            <div className="ml-4 text-slate-400 group-hover:text-slate-600 transition-all duration-200 group-hover:translate-x-0.5">
+                              <ArrowUpRight className="w-5 h-5" />
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </Link>
+                  );
+                }
+              })}
             </div>
           </motion.div>
         )}

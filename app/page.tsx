@@ -11,7 +11,8 @@ import { getBaseUrl } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = "Linkio - All that you are, in one link";
-  const description = "Create your personalized link-in-bio page. Curate, organize, and share everything you want on your own page. Perfect for creators, influencers, and professionals.";
+  const description =
+    "Create your personalized link-in-bio page. Curate, organize, and share everything you want on your own page. Perfect for creators, influencers, and professionals.";
   const imageUrl = `${getBaseUrl()}/logo.png`;
 
   return {
@@ -48,7 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "influencer tools",
       "link management",
       "social links",
-      "personal branding"
+      "personal branding",
     ],
     authors: [{ name: "Caio H." }],
     creator: "Linkio",

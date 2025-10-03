@@ -152,9 +152,7 @@ const UsernameForm = () => {
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div
-            className="flex-1 text-foreground bg-input px-3 py-2 rounded border-l border-y truncate"
-          >
+          <div className="flex-1 text-foreground bg-input px-3 py-2 rounded border-l border-y truncate">
             {getBaseUrl()}/u/{currentSlug}
           </div>
           <button

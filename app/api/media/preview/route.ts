@@ -39,17 +39,16 @@ export async function POST(req: Request) {
     const titleOverride = body?.title ? String(body.title).trim() : undefined;
 
     if (!url) {
-      return NextResponse.json(
-        { error: "Missing url." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing url." }, { status: 400 });
     }
 
     const videoId = extractYouTubeVideoId(url);
 
     if (!videoId) {
       return NextResponse.json(
-        { error: "Unable to extract a YouTube video ID from the provided URL." },
+        {
+          error: "Unable to extract a YouTube video ID from the provided URL.",
+        },
         { status: 400 },
       );
     }
@@ -94,5 +93,3 @@ export async function POST(req: Request) {
     );
   }
 }
-
-

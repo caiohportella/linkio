@@ -15,7 +15,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { useState, useTransition } from "react";
 import { Button } from "../ui/button";
-import { Loader2, Plus, Music, Trash2, TvMinimalPlayIcon, Clock } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Music,
+  Trash2,
+  TvMinimalPlayIcon,
+  Clock,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -27,7 +34,13 @@ import { createElement } from "react";
 import Image from "next/image";
 import { MediaPreview, formatDateTime } from "@/lib/utils";
 import { SUPPORTED_MUSIC_PLATFORMS, MusicLinkItem } from "@/lib/utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import { useAuth } from "@clerk/nextjs";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -63,14 +76,17 @@ const formSchema = z
         }) as z.ZodType<MusicLinkItem>,
       )
       .optional(),
-    editingMusicLink: z.object({
-      platform: z.string(),
-      url: z.string(),
-      type: z.string(),
-      musicTrackTitle: z.string().optional(),
-      musicArtistName: z.string().optional(),
-      musicAlbumArtUrl: z.string().optional(),
-    }).nullable().optional() as z.ZodType<MusicLinkItem | null | undefined>,
+    editingMusicLink: z
+      .object({
+        platform: z.string(),
+        url: z.string(),
+        type: z.string(),
+        musicTrackTitle: z.string().optional(),
+        musicArtistName: z.string().optional(),
+        musicAlbumArtUrl: z.string().optional(),
+      })
+      .nullable()
+      .optional() as z.ZodType<MusicLinkItem | null | undefined>,
     folderId: z.optional(z.string()), // New field for folder ID
     mediaPreview: z
       .object({
@@ -79,6 +95,29 @@ const formSchema = z
         videoId: z.string(),
         title: z.string(),
         thumbnailUrl: z.string().url(),
+      })
+      .nullable()
+      .optional(),
+    playlistPreview: z
+      .object({
+        platform: z.string(),
+        url: z.string(),
+        playlistId: z.string(),
+        title: z.string(),
+        description: z.string().optional(),
+        thumbnailUrl: z.string().optional(),
+        trackCount: z.number().optional(),
+        ownerName: z.string().optional(),
+        tracks: z
+          .array(
+            z.object({
+              name: z.string(),
+              artist: z.string(),
+              duration: z.string().optional(),
+              previewUrl: z.string().optional(),
+            }),
+          )
+          .optional(),
       })
       .nullable()
       .optional(),
@@ -94,7 +133,9 @@ const formSchema = z
     }
   });
 
-const sanitizeMediaPreview = (value: MediaPreview | null | undefined): MediaPreview | null => {
+const sanitizeMediaPreview = (
+  value: MediaPreview | null | undefined,
+): MediaPreview | null => {
   if (!value) return null;
   if (value.platform === "youtube") {
     return value;
@@ -109,7 +150,7 @@ const CreateLinkForm = () => {
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [scheduleCleared, setScheduleCleared] = useState(false);
-  
+
   const router = useRouter();
   const createLink = useMutation(api.lib.links.createLink);
   const { userId } = useAuth(); // Get current user ID
@@ -133,6 +174,7 @@ const CreateLinkForm = () => {
   const musicLinks = form.watch("musicLinks") || []; // Watch musicLinks from form state with default
   const editingMusicLink = form.watch("editingMusicLink"); // Watch editingMusicLink from form state
   const mediaPreview = sanitizeMediaPreview(form.watch("mediaPreview"));
+  const playlistPreview = form.watch("playlistPreview");
   const scheduledAt = form.watch("scheduledAt");
   const isScheduleActive = !!scheduledAt || isScheduleModalOpen;
 
@@ -154,14 +196,14 @@ const CreateLinkForm = () => {
   };
 
   const handleRemoveMusicLink = (platformName: string) => {
-    const updatedLinks = musicLinks.filter((link) => link.platform !== platformName);
+    const updatedLinks = musicLinks.filter(
+      (link) => link.platform !== platformName,
+    );
     handleSetMusicLinks(updatedLinks);
     toast.success(`${platformName} music link removed!`);
   };
 
-  const handleSetMediaPreview = (
-    preview: MediaPreview | null,
-  ) => {
+  const handleSetMediaPreview = (preview: MediaPreview | null) => {
     form.setValue("mediaPreview", preview, {
       shouldDirty: true,
       shouldValidate: true,
@@ -187,7 +229,7 @@ const CreateLinkForm = () => {
 
     startSubmitting(async () => {
       try {
-        await createLink({
+        const linkData = {
           title: values.title,
           url: values.url || "", // Provide a default empty string if url is undefined
           musicLinks: values.musicLinks,
@@ -195,9 +237,14 @@ const CreateLinkForm = () => {
           musicArtistName: values.musicLinks?.[0]?.musicArtistName,
           musicAlbumArtUrl: values.musicLinks?.[0]?.musicAlbumArtUrl,
           mediaPreview: values.mediaPreview || undefined,
+          playlistPreview: values.playlistPreview || undefined,
           folderId: values.folderId as Id<"folders"> | undefined,
-          scheduledAt: scheduleCleared || values.scheduledAt === null ? undefined : values.scheduledAt ?? undefined,
-        });
+          scheduledAt:
+            scheduleCleared || values.scheduledAt === null
+              ? undefined
+              : (values.scheduledAt ?? undefined),
+        };
+        await createLink(linkData);
         router.push("/dashboard");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to create link");
@@ -234,9 +281,13 @@ const CreateLinkForm = () => {
           name="folderId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-foreground">Folder (optional)</FormLabel>
+              <FormLabel className="text-foreground">
+                Folder (optional)
+              </FormLabel>
               <Select
-                onValueChange={(value: Id<"folders"> | "no-folder") => field.onChange(value === "no-folder" ? undefined : value)}
+                onValueChange={(value: Id<"folders"> | "no-folder") =>
+                  field.onChange(value === "no-folder" ? undefined : value)
+                }
                 defaultValue={field.value}
               >
                 <FormControl>
@@ -270,7 +321,7 @@ const CreateLinkForm = () => {
                 {/* Desktop: Horizontal layout, Mobile: Vertical layout */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                   <FormLabel className="text-foreground">URL</FormLabel>
-                  
+
                   {/* Link Type Buttons */}
                   <div className="flex flex-wrap gap-2">
                     <Badge
@@ -287,9 +338,13 @@ const CreateLinkForm = () => {
                     </Badge>
                     <Badge
                       variant="secondary"
-                      onClick={() => musicLinks.length === 0 && setIsMediaModalOpen(true)}
+                      onClick={() =>
+                        musicLinks.length === 0 &&
+                        !playlistPreview &&
+                        setIsMediaModalOpen(true)
+                      }
                       className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                        musicLinks.length > 0
+                        musicLinks.length > 0 || playlistPreview
                           ? "bg-muted text-muted-foreground cursor-not-allowed"
                           : "cursor-pointer bg-accent/20 hover:bg-accent/30"
                       }`}
@@ -315,6 +370,8 @@ const CreateLinkForm = () => {
 
               {mediaPreview ? (
                 <input type="hidden" {...field} value={mediaPreview.url} />
+              ) : playlistPreview ? (
+                <input type="hidden" {...field} value={playlistPreview.url} />
               ) : musicLinks.length === 0 ? (
                 <>
                   <FormControl>
@@ -331,7 +388,7 @@ const CreateLinkForm = () => {
                 </>
               ) : null}
 
-              {!mediaPreview && musicLinks.length > 0 && (
+              {!mediaPreview && !playlistPreview && musicLinks.length > 0 && (
                 <div className="space-y-3 mt-2">
                   <div className="flex flex-col gap-3">
                     {musicLinks.map((link, index) => {
@@ -340,7 +397,10 @@ const CreateLinkForm = () => {
                       );
                       const Icon = platform?.icon;
                       return (
-                        <div key={index} className="relative group flex items-center justify-between p-3 bg-card rounded-2xl border border-border">
+                        <div
+                          key={index}
+                          className="relative group flex items-center justify-between p-3 bg-card rounded-2xl border border-border"
+                        >
                           <Button
                             type="button"
                             variant="ghost"
@@ -350,8 +410,27 @@ const CreateLinkForm = () => {
                             }}
                             className="flex-1 justify-start cursor-pointer px-0 py-0 h-auto rounded-2xl"
                           >
-                            {Icon && <span className="mr-2" style={{ color: platform?.brandColor || "#000000" }}>{createElement(Icon, { className: "w-5 h-5" })}</span>}
-                            <span className="font-medium text-foreground">{link.musicTrackTitle || `${link.platform} (${link.type})`}</span>
+                            {Icon && (
+                              <span
+                                className="mr-2"
+                                style={{
+                                  color: platform?.brandColor || "#000000",
+                                }}
+                              >
+                                {createElement(Icon, { className: "w-5 h-5" })}
+                              </span>
+                            )}
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className="font-medium text-foreground truncate">
+                                {link.musicTrackTitle ||
+                                  `${link.platform} (${link.type})`}
+                              </p>
+                              {link.musicArtistName && (
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {link.musicArtistName}
+                                </p>
+                              )}
+                            </div>
                           </Button>
                           <Button
                             type="button"
@@ -396,8 +475,12 @@ const CreateLinkForm = () => {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{mediaPreview.title}</p>
-              <p className="text-xs text-muted-foreground truncate">{mediaPreview.url}</p>
+              <p className="text-sm font-semibold text-foreground truncate">
+                {mediaPreview.title}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {mediaPreview.url}
+              </p>
             </div>
             <Button
               type="button"
@@ -411,11 +494,67 @@ const CreateLinkForm = () => {
           </div>
         )}
 
+        {playlistPreview && (
+          <div className="relative group flex items-center justify-between p-3 bg-card rounded-2xl border border-border">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {(() => {
+                const platform = SUPPORTED_MUSIC_PLATFORMS.find(
+                  (p) => p.name === playlistPreview.platform,
+                );
+                const Icon = platform?.icon;
+                const brandColor = platform?.brandColor || "#000000";
+
+                if (Icon) {
+                  return (
+                    <span
+                      className="mr-2"
+                      style={{
+                        color: brandColor,
+                      }}
+                    >
+                      {createElement(Icon, { className: "w-5 h-5" })}
+                    </span>
+                  );
+                }
+
+                return (
+                  <span className="mr-2 text-muted-foreground">
+                    <Music className="w-5 h-5" />
+                  </span>
+                );
+              })()}
+              <div className="flex-1 min-w-0 text-left">
+                <p className="font-medium text-foreground truncate">
+                  {playlistPreview.title}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {playlistPreview.ownerName || "Unknown Owner"} •{" "}
+                  {playlistPreview.trackCount || 0} songs
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                form.setValue("playlistPreview", null);
+                form.setValue("url", "");
+              }}
+              className="text-destructive hover:bg-destructive/10 rounded-full w-8 h-8"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
         {scheduledAt && (
           <div className="rounded-2xl border border-border p-4 flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-foreground">Scheduled</p>
+                <p className="text-sm font-semibold text-foreground">
+                  Scheduled
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {formatDateTime(scheduledAt)}
                 </p>
@@ -442,7 +581,8 @@ const CreateLinkForm = () => {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              The link will be visible on your public page at the scheduled time.
+              The link will be visible on your public page at the scheduled
+              time.
             </p>
           </div>
         )}
@@ -486,6 +626,10 @@ const CreateLinkForm = () => {
         onClearInitialLink={() => handleSetEditingMusicLink(null)} // Clear editing link on back
         handleRemoveMusicLink={handleRemoveMusicLink}
         showExistingLinksOnOpen={musicLinks.length > 0 && !editingMusicLink} // Pass the new prop
+        onPlaylistAdded={(playlist) => {
+          form.setValue("playlistPreview", playlist);
+          form.setValue("url", playlist.url);
+        }}
       />
       <MediaPreviewModal
         isOpen={isMediaModalOpen}

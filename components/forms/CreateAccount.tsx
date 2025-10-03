@@ -15,7 +15,9 @@ import { useSignIn } from "@clerk/nextjs";
 export function CreateAccount() {
   const { signIn } = useSignIn();
 
-  const handleOAuthLogin = async (provider: "github" | "google" | "linkedin" | "apple") => {
+  const handleOAuthLogin = async (
+    provider: "github" | "google" | "linkedin" | "apple",
+  ) => {
     try {
       await signIn?.authenticateWithRedirect({
         strategy: `oauth_${provider}`,

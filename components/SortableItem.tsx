@@ -83,8 +83,14 @@ const SortableItem = ({
   canMoveUp = false,
   canMoveDown = false,
 }: SortableItemProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
 
   const router = useRouter();
 
@@ -108,17 +114,20 @@ const SortableItem = ({
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [scheduleCleared, setScheduleCleared] = useState(false);
   const isScheduleActive = !!scheduledAt || isScheduleModalOpen;
-  
+
   // Music Links Modal state
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
-  const [editingMusicLink, setEditingMusicLink] = useState<MusicLinkItem | null>(null);
+  const [editingMusicLink, setEditingMusicLink] =
+    useState<MusicLinkItem | null>(null);
   const isScheduleInFuture = link.scheduledAt
     ? link.scheduledAt > Date.now()
     : false;
 
   // Animation state for reordering
   const [isAnimating, setIsAnimating] = useState(false);
-  const [animationDirection, setAnimationDirection] = useState<'up' | 'down' | null>(null);
+  const [animationDirection, setAnimationDirection] = useState<
+    "up" | "down" | null
+  >(null);
 
   const updateLink = useMutation(api.lib.links.updateLink);
   const deleteLink = useMutation(api.lib.links.deleteLink);
@@ -127,7 +136,7 @@ const SortableItem = ({
   // Animation handlers
   const handleAnimatedMoveUp = () => {
     if (onMoveUp && canMoveUp) {
-      setAnimationDirection('up');
+      setAnimationDirection("up");
       setIsAnimating(true);
       onMoveUp();
       setTimeout(() => {
@@ -139,7 +148,7 @@ const SortableItem = ({
 
   const handleAnimatedMoveDown = () => {
     if (onMoveDown && canMoveDown) {
-      setAnimationDirection('down');
+      setAnimationDirection("down");
       setIsAnimating(true);
       onMoveDown();
       setTimeout(() => {
@@ -188,7 +197,7 @@ const SortableItem = ({
 
   const handleSetMusicLinks = (newLinks: MusicLinkItem[]) => {
     setMusicLinks(newLinks);
-    
+
     // Update the primary URL to the first music link's URL
     const primaryUrl = newLinks[0]?.url ?? link.url;
     setEditUrl(primaryUrl);
@@ -269,18 +278,22 @@ const SortableItem = ({
           disabled={!canMoveUp || isAnimating}
           className="h-6 w-6 p-0 transition-all duration-200 cursor-pointer hover:bg-muted/50 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          <ChevronUp className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
-            isAnimating && animationDirection === 'up' ? 'scale-110' : ''
-          }`} />
+          <ChevronUp
+            className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
+              isAnimating && animationDirection === "up" ? "scale-110" : ""
+            }`}
+          />
         </button>
         <button
           onClick={handleAnimatedMoveDown}
           disabled={!canMoveDown || isAnimating}
           className="h-6 w-6 p-0 transition-all duration-200 cursor-pointer hover:bg-muted/50 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
-            isAnimating && animationDirection === 'down' ? 'scale-110' : ''
-          }`} />
+          <ChevronDown
+            className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
+              isAnimating && animationDirection === "down" ? "scale-110" : ""
+            }`}
+          />
         </button>
       </div>
 
@@ -373,7 +386,7 @@ const SortableItem = ({
                 ))}
               </div>
             )}
-            
+
             {/* Add More Sources Button */}
             <Button
               type="button"
@@ -552,17 +565,17 @@ const SortableItem = ({
           </div>
         </div>
       ) : (
-         <div 
-           className={`bg-card border border-border rounded-2xl p-4 shadow-sm transition-all duration-300 ease-out ${
-             isDragging 
-               ? 'scale-102 shadow-xl border-primary ring-4 ring-primary/30 rotate-1' 
-               : isAnimating
-                 ? animationDirection === 'up'
-                   ? 'animate-slide-up'
-                   : 'animate-slide-down'
-                 : ''
-           }`}
-         >
+        <div
+          className={`bg-card border border-border rounded-2xl p-4 shadow-sm transition-all duration-300 ease-out ${
+            isDragging
+              ? "scale-102 shadow-xl border-primary ring-4 ring-primary/30 rotate-1"
+              : isAnimating
+                ? animationDirection === "up"
+                  ? "animate-slide-up"
+                  : "animate-slide-down"
+                : ""
+          }`}
+        >
           {/* Desktop Layout */}
           <div className="hidden sm:flex items-center gap-3">
             {/* Drag Handle */}
@@ -647,16 +660,16 @@ const SortableItem = ({
             </div>
           </div>
 
-           {/* Mobile Layout */}
-           <div className="sm:hidden space-y-3 pl-10">
-             {/* Header with title */}
-             <div className="flex items-start gap-3">
-               <div className="flex-1 min-w-0">
-                 <h3 className="font-semibold text-base text-foreground leading-tight">
-                   {link.title}
-                 </h3>
-               </div>
-             </div>
+          {/* Mobile Layout */}
+          <div className="sm:hidden space-y-3 pl-10">
+            {/* Header with title */}
+            <div className="flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-base text-foreground leading-tight">
+                  {link.title}
+                </h3>
+              </div>
+            </div>
 
             {/* Content details */}
             <div className="space-y-1">

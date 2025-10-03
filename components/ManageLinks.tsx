@@ -89,7 +89,9 @@ const ManageLinks = ({
   }, [links]);
 
   const folderNameMap = useMemo(() => {
-    return Object.fromEntries(folders.map((folder) => [folder._id, folder.name]));
+    return Object.fromEntries(
+      folders.map((folder) => [folder._id, folder.name]),
+    );
   }, [folders]);
 
   return (

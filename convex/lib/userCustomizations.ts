@@ -25,7 +25,7 @@ export const getCustomizationsBySlug = query({
             platform: v.string(),
             url: v.string(),
           }),
-      ),
+        ),
       ),
     }),
   ),
@@ -54,7 +54,9 @@ export const getCustomizationsBySlug = query({
 
     if (customizations.profilePictureStorageId) {
       try {
-        const url = await storage.getUrl(customizations.profilePictureStorageId);
+        const url = await storage.getUrl(
+          customizations.profilePictureStorageId,
+        );
         profilePictureUrl = url || undefined;
       } catch (error) {
         console.error("Error getting profile picture URL:", error);
@@ -100,7 +102,9 @@ export const getUserCustomizations = query({
 
     if (customizations.profilePictureStorageId) {
       try {
-        const url = await storage.getUrl(customizations.profilePictureStorageId);
+        const url = await storage.getUrl(
+          customizations.profilePictureStorageId,
+        );
         profilePictureUrl = url || undefined;
       } catch (error) {
         console.error("Error getting profile picture URL:", error);

@@ -34,7 +34,11 @@ interface CreateFolderFormProps {
   initialName?: string;
 }
 
-const CreateFolderForm = ({ onFolderCreated, folderId, initialName }: CreateFolderFormProps) => {
+const CreateFolderForm = ({
+  onFolderCreated,
+  folderId,
+  initialName,
+}: CreateFolderFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, startSubmitting] = useTransition();
   const router = useRouter();

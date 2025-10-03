@@ -350,6 +350,28 @@ export const createLink = mutation({
         thumbnailUrl: v.string(),
       }),
     ),
+    playlistPreview: v.optional(
+      v.object({
+        platform: v.string(),
+        url: v.string(),
+        playlistId: v.string(),
+        title: v.string(),
+        description: v.optional(v.string()),
+        thumbnailUrl: v.optional(v.string()),
+        trackCount: v.optional(v.number()),
+        ownerName: v.optional(v.string()),
+        tracks: v.optional(
+          v.array(
+            v.object({
+              name: v.string(),
+              artist: v.string(),
+              duration: v.optional(v.string()),
+              previewUrl: v.optional(v.string()),
+            }),
+          ),
+        ),
+      }),
+    ),
     scheduledAt: v.optional(v.number()),
     folderId: v.optional(v.id("folders")), // New optional argument
   },
@@ -369,6 +391,7 @@ export const createLink = mutation({
       musicArtistName: args.musicArtistName || undefined, // Store musicArtistName
       musicAlbumArtUrl: args.musicAlbumArtUrl || undefined, // Store musicAlbumArtUrl
       mediaPreview: args.mediaPreview || undefined,
+      playlistPreview: args.playlistPreview || undefined,
       scheduledAt: args.scheduledAt ?? undefined,
       folderId: args.folderId || undefined, // Store folderId
     });

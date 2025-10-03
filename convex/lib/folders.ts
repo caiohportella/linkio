@@ -57,7 +57,7 @@ export const updateFolderPosition = mutation({
     const { folderId, position } = args;
 
     await db.patch(folderId, { position });
-    console.log(`Updated folder ${folderId} position to ${position}`);
+    `Updated folder ${folderId} position to ${position}`;
   },
 });
 
@@ -73,7 +73,7 @@ export const updateFolder = mutation({
     const { folderId, name } = args;
 
     await db.patch(folderId, { name });
-    console.log(`Updated folder ${folderId} name to ${name}`);
+    `Updated folder ${folderId} name to ${name}`;
   },
 });
 
@@ -107,6 +107,6 @@ export const deleteFolder = mutation({
     }
 
     await db.delete(folderId);
-    console.log(`Deleted folder ${folderId} and moved ${linksInFolder.length} links to main list`);
+    `Deleted folder ${folderId} and moved ${linksInFolder.length} links to main list`;
   },
 });

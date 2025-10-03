@@ -30,8 +30,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${ramabhadra.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <ClerkProvider dynamic appearance={{ cssLayerName: "clerk"  }}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ClerkProvider dynamic appearance={{ cssLayerName: "clerk" }}>
             <ConvexClientProvider>{children}</ConvexClientProvider>
           </ClerkProvider>
           <Toaster />

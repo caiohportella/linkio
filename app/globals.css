@@ -10,7 +10,7 @@
     transform: scale(1.05);
   }
   .scale-110 {
-    transform: scale(1.10);
+    transform: scale(1.1);
   }
 }
 
@@ -18,11 +18,11 @@
   .animate-slide-up {
     animation: slideUp 0.3s ease-out forwards;
   }
-  
+
   .animate-slide-down {
     animation: slideDown 0.3s ease-out forwards;
   }
-  
+
   @keyframes slideUp {
     0% {
       transform: translateY(0);
@@ -37,7 +37,7 @@
       opacity: 1;
     }
   }
-  
+
   @keyframes slideDown {
     0% {
       transform: translateY(0);
@@ -143,7 +143,9 @@
   --destructive: #ef4444; /* Destructive red */
   --destructive-foreground: #fef2f2; /* Destructive text */
 
-  --section-background: hsl(222.2 47.4% 11.2%); /* Dark background for sections */
+  --section-background: hsl(
+    222.2 47.4% 11.2%
+  ); /* Dark background for sections */
   --section-border: hsl(215.4 16.3% 18.2%); /* Dark border for sections */
 }
 

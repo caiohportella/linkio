@@ -36,7 +36,11 @@ export function AnimatedBackground() {
       {/* 🎯 Elemento animado central 2 */}
       <motion.div
         className="absolute top-1/2 left-1/2 h-[250px] w-[250px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-pink-400/20 blur-2xl"
-        animate={{ x: [0, 20, -20, 0], y: [0, -20, 20, 0], scale: [1, 1.1, 0.9, 1] }}
+        animate={{
+          x: [0, 20, -20, 0],
+          y: [0, -20, 20, 0],
+          scale: [1, 1.1, 0.9, 1],
+        }}
         transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
       />
     </motion.div>

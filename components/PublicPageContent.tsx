@@ -136,13 +136,16 @@ const PublicPageContent = ({
               className="bg-white/90 backdrop-blur-xl rounded-3xl p-8 lg:p-10 shadow-xl border-[1px]"
               style={{ borderColor: accentColor }}
             >
-              <Links preloadedLinks={preloadedLinks} preloadedFolders={preloadedFolders} />
+              <Links
+                preloadedLinks={preloadedLinks}
+                preloadedFolders={preloadedFolders}
+              />
             </div>
           </div>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-2 mt-16 pt-8 border-t border-gray-200/50 text-center">
-        <Image src="/logo.png" alt="logo" width={50} height={50} />
+          <Image src="/logo.png" alt="logo" width={50} height={50} />
           <p className="text-gray-600 text-sm">
             Powered by{" "}
             <Link

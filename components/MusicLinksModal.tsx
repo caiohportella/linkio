@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { SUPPORTED_MUSIC_PLATFORMS } from "@/lib/utils";
+import {
+  SUPPORTED_MUSIC_PLATFORMS,
+  extractAppleMusicRegion,
+  buildAppleMusicUrl,
+  extractAmazonMusicRegion,
+  buildAmazonMusicUrl,
+} from "@/lib/utils";
 import { toast } from "sonner";
 import { Trash2, Plus, Loader2 } from "lucide-react";
 import { MusicLinkItem } from "@/lib/utils";
@@ -23,9 +24,29 @@ interface MusicLinksModalProps {
   onClearInitialLink?: () => void; // New prop for clearing initialLink
   handleRemoveMusicLink: (platformName: string) => void; // Added prop
   showExistingLinksOnOpen?: boolean; // New prop
+  onPlaylistAdded?: (playlist: {
+    platform: string;
+    url: string;
+    playlistId: string;
+    title: string;
+    description?: string;
+    thumbnailUrl?: string;
+    trackCount?: number;
+    ownerName?: string;
+    tracks?: {
+      name: string;
+      artist: string;
+      duration?: string;
+      previewUrl?: string;
+    }[];
+  }) => void; // New prop for playlist data
 }
 
-type View = "platformSelection" | "linkTypeSelection" | "inputForm" | "existingLinks";
+type View =
+  | "platformSelection"
+  | "linkTypeSelection"
+  | "inputForm"
+  | "existingLinks";
 
 const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
   isOpen,
@@ -36,6 +57,7 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
   onClearInitialLink,
   handleRemoveMusicLink,
   showExistingLinksOnOpen = false,
+  onPlaylistAdded,
 }) => {
   const [selectedPlatform, setSelectedPlatform] = useState<{
     name: string;
@@ -74,10 +96,7 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
           for (const linkType of platform.linkTypes) {
             if (linkType.urlPattern.test(initialLink.url)) {
               setSelectedLinkType(linkType);
-              const extractedId = initialLink.url.replace(
-                linkType.baseUrl,
-                "",
-              );
+              const extractedId = initialLink.url.replace(linkType.baseUrl, "");
               setMusicInput(extractedId);
               setMusicTrackTitle(initialLink.musicTrackTitle || ""); // Populate metadata
               setMusicArtistName(initialLink.musicArtistName || "");
@@ -208,52 +227,189 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
       return;
     }
 
-    const potentialFullUrl = musicInput.startsWith("http")
-      ? musicInput
-      : selectedLinkType.baseUrl + musicInput.trim();
+    let potentialFullUrl: string;
+    let finalUrl: string;
+
+    if (musicInput.startsWith("http")) {
+      // If it's a full URL, use it as is
+      potentialFullUrl = musicInput;
+      finalUrl = musicInput;
+    } else {
+      // If it's just an ID, construct the URL using the baseUrl
+      potentialFullUrl = selectedLinkType.baseUrl + musicInput.trim();
+      finalUrl = potentialFullUrl;
+    }
+
+    // Special handling for Apple Music URLs to preserve region
+    if (
+      selectedPlatform.name === "Apple Music" &&
+      musicInput.startsWith("http")
+    ) {
+      const extractedRegion = extractAppleMusicRegion(musicInput);
+      if (extractedRegion) {
+        // Extract the path after the region (e.g., "song/negationist/1629982909")
+        const pathMatch = musicInput.match(
+          /^https?:\/\/music\.apple\.com\/[a-z]{2}\/(.+)$/,
+        );
+        if (pathMatch) {
+          const path = pathMatch[1];
+          finalUrl = buildAppleMusicUrl(
+            extractedRegion,
+            selectedLinkType.type,
+            path,
+          );
+        }
+      }
+    }
+
+    // Special handling for Deezer URLs (only link.deezer.com format supported)
+    if (selectedPlatform.name === "Deezer" && musicInput.startsWith("http")) {
+      // For link.deezer.com URLs, use them as-is
+      finalUrl = musicInput;
+      potentialFullUrl = musicInput;
+    }
+
+    // Special handling for Amazon Music URLs to preserve region
+    if (
+      selectedPlatform.name === "Amazon Music" &&
+      musicInput.startsWith("http")
+    ) {
+      const extractedRegion = extractAmazonMusicRegion(musicInput);
+      if (extractedRegion) {
+        // Extract the ID from the URL
+        let id = "";
+        if (selectedLinkType.type === "track") {
+          // For tracks: extract album ID from /albums/B0... part
+          const albumMatch = musicInput.match(/\/albums\/(B0[a-zA-Z0-9]+)/);
+          if (albumMatch) {
+            id = albumMatch[1];
+            // For tracks, we need to preserve the full query string
+            const queryMatch = musicInput.match(/\?(.+)$/);
+            if (queryMatch) {
+              id += "?" + queryMatch[1];
+            }
+          }
+        } else {
+          // For albums and playlists: extract the ID
+          const idMatch = musicInput.match(
+            `/${selectedLinkType.type}s/(B0[a-zA-Z0-9]+)`,
+          );
+          if (idMatch) {
+            id = idMatch[1];
+            // Preserve query parameters if they exist
+            const queryMatch = musicInput.match(/\?(.+)$/);
+            if (queryMatch) {
+              id += "?" + queryMatch[1];
+            }
+          }
+        }
+        if (id) {
+          finalUrl = buildAmazonMusicUrl(
+            extractedRegion,
+            selectedLinkType.type,
+            id,
+          );
+        }
+      }
+    }
 
     console.log("musicInput:", musicInput);
     console.log("selectedLinkType.baseUrl:", selectedLinkType.baseUrl);
     console.log("potentialFullUrl:", potentialFullUrl);
-    console.log("isValidURL:", selectedLinkType.urlPattern.test(potentialFullUrl));
+    console.log("finalUrl:", finalUrl);
+    console.log(
+      "isValidURL:",
+      selectedLinkType.urlPattern.test(potentialFullUrl),
+    );
 
     if (!selectedLinkType.urlPattern.test(potentialFullUrl)) {
       toast.error("Please enter a valid URL or ID for the selected link type.");
       return;
     }
 
-    let finalUrl = potentialFullUrl;
-    if (!musicInput.startsWith("http")) {
-      finalUrl = selectedLinkType.baseUrl + musicInput.trim();
-    }
-
     setIsSaving(true);
 
     try {
+      // Check if this is a playlist link type
+      if (selectedLinkType.type === "playlist") {
+        console.log("Detected playlist link type, calling playlist API...");
+        console.log("Final URL:", finalUrl);
+
+        // Use playlist API for playlist links
+        const response = await fetch("/api/playlist/preview", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: finalUrl }),
+        });
+
+        console.log("Playlist API response status:", response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Playlist API error:", errorText);
+          throw new Error(
+            `Failed to fetch playlist metadata: ${response.status}`,
+          );
+        }
+
+        const playlistData = await response.json();
+        console.log("Received playlist data:", playlistData);
+
+        // Pass the playlist data back to the parent component
+        if (onPlaylistAdded) {
+          console.log("Calling onPlaylistAdded with data:", playlistData);
+          onPlaylistAdded(playlistData);
+        }
+
+        // Close the modal and reset state
+        onOpenChange(false);
+        setSelectedPlatform(null);
+        setSelectedLinkType(null);
+        setMusicInput("");
+        setMusicTrackTitle("");
+        setMusicArtistName("");
+        setMusicAlbumArtUrl("");
+        setCurrentView("platformSelection");
+
+        toast.success("Playlist link created successfully!");
+        return;
+      }
+
+      // Regular music link handling for tracks and albums
       let autoMetadata = {
         title: musicTrackTitle || undefined,
         artist: musicArtistName || undefined,
         artworkUrl: musicAlbumArtUrl || undefined,
       };
 
-      if (!musicTrackTitle || !musicArtistName || !musicAlbumArtUrl) {
+      if (
+        !musicTrackTitle.trim() ||
+        !musicArtistName.trim() ||
+        !musicAlbumArtUrl.trim()
+      ) {
+        console.log("Fetching metadata for URL:", finalUrl);
+        console.log("Platform:", selectedPlatform.name);
         const fetched = await fetchMetadataForUrl(finalUrl);
+        console.log("Fetched metadata:", fetched);
         if (fetched) {
           autoMetadata = {
-            title: musicTrackTitle || fetched.title,
-            artist: musicArtistName || fetched.artist,
-            artworkUrl: musicAlbumArtUrl || fetched.artworkUrl,
+            title: musicTrackTitle.trim() || fetched.title,
+            artist: musicArtistName.trim() || fetched.artist,
+            artworkUrl: musicAlbumArtUrl.trim() || fetched.artworkUrl,
           };
-          if (!musicTrackTitle && fetched.title) {
+          if (!musicTrackTitle.trim() && fetched.title) {
             setMusicTrackTitle(fetched.title);
           }
-          if (!musicArtistName && fetched.artist) {
+          if (!musicArtistName.trim() && fetched.artist) {
             setMusicArtistName(fetched.artist);
           }
-          if (!musicAlbumArtUrl && fetched.artworkUrl) {
+          if (!musicAlbumArtUrl.trim() && fetched.artworkUrl) {
             setMusicAlbumArtUrl(fetched.artworkUrl);
           }
         }
+        console.log("Final autoMetadata:", autoMetadata);
       }
 
       const newLink = {
@@ -273,7 +429,9 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
 
       if (existingLinkIndex !== -1) {
         setMusicLinks(
-          musicLinks.map((link, idx) => (idx === existingLinkIndex ? newLink : link)),
+          musicLinks.map((link, idx) =>
+            idx === existingLinkIndex ? newLink : link,
+          ),
         );
       } else {
         setMusicLinks([...musicLinks, newLink]);
@@ -402,7 +560,9 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
 
         {currentView === "existingLinks" ? (
           <div className="space-y-4 py-4">
-            <p className="text-lg font-semibold text-foreground">Your Music Links</p>
+            <p className="text-lg font-semibold text-foreground">
+              Your Music Links
+            </p>
             {musicLinks.length === 0 ? (
               <p className="text-muted-foreground">No music links added yet.</p>
             ) : (
@@ -413,15 +573,30 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
                   );
                   const Icon = platform?.icon;
                   return (
-                    <div key={index} className="relative group flex items-center justify-between p-3 bg-card rounded-2xl border border-border">
+                    <div
+                      key={index}
+                      className="relative group flex items-center justify-between p-3 bg-card rounded-2xl border border-border"
+                    >
                       <Button
                         type="button"
                         variant="ghost"
                         onClick={() => handleEditExistingLink(link)}
                         className="flex-1 justify-start cursor-pointer px-0 py-0 h-auto rounded-2xl"
                       >
-                        {Icon && <span className="mr-2" style={{ color: platform?.brandColor || "#000000" }}>{React.createElement(Icon, { className: "w-5 h-5" })}</span>}
-                        <span className="font-medium text-foreground">{link.musicTrackTitle || `${link.platform} (${link.type})`}</span>
+                        {Icon && (
+                          <span
+                            className="mr-2"
+                            style={{ color: platform?.brandColor || "#000000" }}
+                          >
+                            {React.createElement(Icon, {
+                              className: "w-5 h-5",
+                            })}
+                          </span>
+                        )}
+                        <span className="font-medium text-foreground">
+                          {link.musicTrackTitle ||
+                            `${link.platform} (${link.type})`}
+                        </span>
                       </Button>
                       <Button
                         type="button"
@@ -445,77 +620,127 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
               >
                 Back
               </Button>
-              <Button
-                onClick={() => setCurrentView("platformSelection")}
-                className="cursor-pointer rounded-2xl"
-              >
-                <Plus className="w-4 h-4 mr-2 animate-pulse" />
-                Add New Link
-              </Button>
+              {(() => {
+                const availablePlatforms = SUPPORTED_MUSIC_PLATFORMS.filter(
+                  (music) =>
+                    !musicLinks.some((link) => link.platform === music.name),
+                );
+                return availablePlatforms.length > 0 ? (
+                  <Button
+                    onClick={() => setCurrentView("platformSelection")}
+                    className="cursor-pointer rounded-2xl"
+                  >
+                    <Plus className="w-4 h-4 mr-2 animate-pulse" />
+                    Add New Link
+                  </Button>
+                ) : null;
+              })()}
             </div>
           </div>
         ) : currentView === "platformSelection" ? (
-          <div className="grid grid-cols-2 gap-4 py-4">
-            {SUPPORTED_MUSIC_PLATFORMS.filter(
-              (music) =>
-                !musicLinks.some((link) => link.platform === music.name && (!initialLink || initialLink.platform !== music.name)) ||
-                (initialLink && initialLink.platform === music.name),
-            ).map((music) => {
-              const isAlreadyAdded = musicLinks.some(
-                (link) => link.platform === music.name,
+          <div className="py-4">
+            {(() => {
+              const availablePlatforms = SUPPORTED_MUSIC_PLATFORMS.filter(
+                (music) => {
+                  // If we're editing an existing link, show the current platform
+                  if (initialLink && initialLink.platform === music.name) {
+                    return true;
+                  }
+                  // Otherwise, only show platforms that haven't been added yet
+                  return !musicLinks.some(
+                    (link) => link.platform === music.name,
+                  );
+                },
               );
-              const isCurrentlyEditing = initialLink?.platform === music.name;
-              const Icon = music.icon;
-              const brandColor = music.brandColor || "#000000";
 
-              const buttonBgColor = brandColor;
-              const buttonTextColor = "white";
-              const buttonBorderColor = brandColor;
+              if (availablePlatforms.length === 0) {
+                return (
+                  <div className="text-center py-8">
+                    <p className="text-lg font-semibold text-foreground mb-2">
+                      All music platforms have been added!
+                    </p>
+                    <p className="text-muted-foreground mb-4">
+                      You can edit or remove existing links to add different
+                      platforms.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentView("existingLinks")}
+                      className="cursor-pointer rounded-2xl"
+                    >
+                      View Existing Links
+                    </Button>
+                  </div>
+                );
+              }
 
               return (
-                <Button
-                  key={music.name}
-                  variant="outline"
-                  onClick={() => handleSelectPlatform(music)}
-                  className={`cursor-pointer flex items-center gap-2 rounded-2xl p-4 transition-all duration-200 ${
-                    isAlreadyAdded || isCurrentlyEditing
-                      ? "hover:brightness-110"
-                      : ""
-                  }`}
-                  style={{
-                    backgroundColor: buttonBgColor,
-                    color: buttonTextColor,
-                    borderColor: buttonBorderColor,
-                    borderWidth: "2px",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isAlreadyAdded && !isCurrentlyEditing) {
-                      e.currentTarget.style.boxShadow = `0 0 10px ${brandColor}`; // Glow effect
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isAlreadyAdded && !isCurrentlyEditing) {
-                      e.currentTarget.style.boxShadow = "none";
-                    }
-                  }}
-                >
-                  <Icon className="w-5 h-5" style={{ color: buttonTextColor }} />
-                  <span
-                    className="font-medium"
-                    style={{ color: buttonTextColor }}
-                  >
-                    {music.name}
-                  </span>
-                </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  {availablePlatforms.map((music) => {
+                    const isAlreadyAdded = musicLinks.some(
+                      (link) => link.platform === music.name,
+                    );
+                    const isCurrentlyEditing =
+                      initialLink?.platform === music.name;
+                    const Icon = music.icon;
+                    const brandColor = music.brandColor || "#000000";
+
+                    const buttonBgColor = brandColor;
+                    const buttonTextColor = "white";
+                    const buttonBorderColor = brandColor;
+
+                    return (
+                      <Button
+                        key={music.name}
+                        variant="outline"
+                        onClick={() => handleSelectPlatform(music)}
+                        className={`cursor-pointer flex items-center gap-2 rounded-2xl p-4 transition-all duration-200 ${
+                          isAlreadyAdded || isCurrentlyEditing
+                            ? "hover:brightness-110"
+                            : ""
+                        }`}
+                        style={{
+                          backgroundColor: buttonBgColor,
+                          color: buttonTextColor,
+                          borderColor: buttonBorderColor,
+                          borderWidth: "2px",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isAlreadyAdded && !isCurrentlyEditing) {
+                            e.currentTarget.style.boxShadow = `0 0 10px ${brandColor}`; // Glow effect
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isAlreadyAdded && !isCurrentlyEditing) {
+                            e.currentTarget.style.boxShadow = "none";
+                          }
+                        }}
+                      >
+                        <Icon
+                          className="w-5 h-5"
+                          style={{ color: buttonTextColor }}
+                        />
+                        <span
+                          className="font-medium"
+                          style={{ color: buttonTextColor }}
+                        >
+                          {music.name}
+                        </span>
+                      </Button>
+                    );
+                  })}
+                </div>
               );
-            })}
+            })()}
           </div>
         ) : currentView === "linkTypeSelection" ? (
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-2 mb-4">
               {selectedPlatform?.icon && (
                 <span className="flex items-center justify-center">
-                  {React.createElement(selectedPlatform.icon, { className: "w-5 h-5" })}
+                  {React.createElement(selectedPlatform.icon, {
+                    className: "w-5 h-5",
+                  })}
                 </span>
               )}
               <span className="text-lg font-semibold">
@@ -555,7 +780,9 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
             <div className="flex items-center gap-2">
               {selectedPlatform?.icon && (
                 <span className="flex items-center justify-center">
-                  {React.createElement(selectedPlatform.icon, { className: "w-5 h-5" })}
+                  {React.createElement(selectedPlatform.icon, {
+                    className: "w-5 h-5",
+                  })}
                 </span>
               )}
               <span className="text-lg font-semibold">

@@ -275,7 +275,10 @@ export async function fetchProfileCountryAnalytics(
     );
 
     if (!countryRes.ok) {
-      console.error("Failed to fetch country analytics:", await countryRes.text());
+      console.error(
+        "Failed to fetch country analytics:",
+        await countryRes.text(),
+      );
       return {
         countries: [],
         totalCountries: 0,
@@ -293,23 +296,28 @@ export async function fetchProfileCountryAnalytics(
       };
     }
 
-    const countries = data.data.map((row: {
-      country?: string;
-      total_clicks?: number;
-      unique_users?: number;
-      percentage?: number;
-      top_link_title?: string;
-      top_link_id?: string;
-    }) => ({
-      country: row.country || "Unknown",
-      totalClicks: row.total_clicks || 0,
-      uniqueUsers: row.unique_users || 0,
-      percentage: row.percentage || 0,
-      topLinkTitle: row.top_link_title || "Unknown Link",
-      topLinkId: row.top_link_id || "",
-    }));
+    const countries = data.data.map(
+      (row: {
+        country?: string;
+        total_clicks?: number;
+        unique_users?: number;
+        percentage?: number;
+        top_link_title?: string;
+        top_link_id?: string;
+      }) => ({
+        country: row.country || "Unknown",
+        totalClicks: row.total_clicks || 0,
+        uniqueUsers: row.unique_users || 0,
+        percentage: row.percentage || 0,
+        topLinkTitle: row.top_link_title || "Unknown Link",
+        topLinkId: row.top_link_id || "",
+      }),
+    );
 
-    const totalClicks = countries.reduce((sum: number, country: CountryAnalyticsData) => sum + country.totalClicks, 0);
+    const totalClicks = countries.reduce(
+      (sum: number, country: CountryAnalyticsData) => sum + country.totalClicks,
+      0,
+    );
 
     return {
       countries,

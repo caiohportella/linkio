@@ -3,13 +3,7 @@
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  GripVertical,
-  Loader2,
-  Pencil,
-  Save,
-  Trash2,
-} from "lucide-react";
+import { GripVertical, Loader2, Pencil, Save, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState, useTransition } from "react";
 import { useMutation } from "convex/react";

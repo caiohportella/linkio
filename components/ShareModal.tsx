@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, User, Link2 } from "lucide-react";
+import { Check, User, Link2, X } from "lucide-react";
 import Image from "next/image";
 import QRCode from "qrcode";
 import {
@@ -71,18 +71,43 @@ export default function ShareModal({
 
     let shareUrl = "";
 
-    switch (platform) {
+    switch (platform.toLowerCase()) {
       case "whatsapp":
         shareUrl = `https://wa.me/?text=${encodedText}%20${encodedUrl}`;
         break;
-      case "X":
+      case "x":
+      case "twitter":
         shareUrl = `https://x.com/intent/post?text=${encodedText}%20${encodedUrl}`;
+        break;
+      case "instagram":
+        // Instagram Stories sharing (opens Instagram app or web)
+        shareUrl = `https://www.instagram.com/create/story/`;
+        break;
+      case "linkedin":
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        break;
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+        break;
+      case "telegram":
+        shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`;
+        break;
+      case "reddit":
+        shareUrl = `https://reddit.com/submit?url=${encodedUrl}&title=${encodedText}`;
+        break;
+      case "pinterest":
+        shareUrl = `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedText}`;
+        break;
+      case "tumblr":
+        shareUrl = `https://www.tumblr.com/widgets/share/tool?posttype=link&title=${encodedText}&caption=${encodedText}&content=${encodedUrl}&canonicalUrl=${encodedUrl}&shareSource=tumblr_share_button`;
         break;
       default:
         return;
     }
 
-    window.open(shareUrl, "_blank", "width=600,height=400");
+    if (shareUrl) {
+      window.open(shareUrl, "_blank", "width=600,height=400");
+    }
   };
 
   return (
@@ -91,10 +116,18 @@ export default function ShareModal({
         className="max-w-sm rounded-2xl bg-card"
         showCloseButton={false}
       >
-        <DialogHeader>
+        <DialogHeader className="relative">
           <DialogTitle className="text-center text-lg font-semibold">
             Share Linkio
           </DialogTitle>
+          {/* Mobile-only close button */}
+          <button
+            onClick={onClose}
+            className="md:hidden absolute top-0 right-0 flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+          </button>
         </DialogHeader>
 
         {/* Content */}
@@ -161,7 +194,7 @@ export default function ShareModal({
             </Card>
 
             {/* Social Share Buttons */}
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-wrap justify-center gap-3">
               {/* Copy Link Button */}
               <button
                 onClick={handleCopyLink}
@@ -178,9 +211,15 @@ export default function ShareModal({
                   {copied ? "Copied!" : "Copy Linkio"}
                 </span>
               </button>
+
+              {/* Social Sharing Buttons */}
               {[
-                { name: "X", platform: "twitter" },
+                { name: "X", platform: "x" },
+                { name: "Instagram", platform: "instagram" },
                 { name: "WhatsApp", platform: "whatsapp" },
+                { name: "LinkedIn", platform: "linkedin" },
+                { name: "Reddit", platform: "reddit" },
+                { name: "Telegram", platform: "telegram" },
               ].map(({ name, platform }) => {
                 const socialData = SUPPORTED_SOCIALS.find(
                   (s) => s.name === name,

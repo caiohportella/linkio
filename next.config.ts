@@ -25,12 +25,16 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "cdn-images.dzcdn.net"
+        hostname: "cdn-images.dzcdn.net",
       },
       {
         protocol: "https",
         hostname: "is1-ssl.mzstatic.com",
-      }
+      },
+      {
+        protocol: "https",
+        hostname: "resources.tidal.com",
+      },
     ],
   },
 };

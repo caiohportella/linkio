@@ -119,7 +119,8 @@ const DashboardPage = async () => {
                       Your Folders
                     </h2>
                     <p className="text-muted-foreground">
-                      See how you can organize your links into folders and reorder them
+                      See how you can organize your links into folders and
+                      reorder them
                     </p>
                   </div>
 

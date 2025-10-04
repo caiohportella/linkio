@@ -59,19 +59,19 @@ const nextConfig: NextConfig = {
               "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' https://clerk.linkio.app.br https://*.clerk.accounts.dev https://*.clerk.services https://*.convex.cloud https://api.github.com",
+              "connect-src 'self' https://clerk.linkio.app.br https://*.clerk.accounts.dev https://*.clerk.services https://*.convex.cloud wss://*.convex.cloud https://api.github.com",
               "frame-src 'self' https://clerk.linkio.app.br https://*.clerk.accounts.dev https://*.clerk.services https://challenges.cloudflare.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'none'",
-              "upgrade-insecure-requests"
-            ].join("; ")
-          }
-        ]
-      }
+              "upgrade-insecure-requests",
+            ].join("; "),
+          },
+        ],
+      },
     ];
-  }
+  },
 };
 
 export default nextConfig;

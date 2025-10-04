@@ -35,14 +35,14 @@ export default function SignUpPage() {
   const handleOAuthLogin = async (
     provider: "github" | "google",
   ) => {
-    if (!isLoaded) return;
+    if (!isLoaded || !signUp) return;
     
     try {
       setOauthLoading(provider);
-      await signUp?.authenticateWithRedirect({
-        strategy: `oauth_${provider}`,
-        redirectUrl: `${process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}/v1/oauth_callback`,
-        redirectUrlComplete: "/dashboard",
+      await signUp.authenticateWithRedirect({
+        strategy: `oauth_${provider}` as any,
+        redirectUrl: '/sign-in/sso-callback',
+        redirectUrlComplete: '/dashboard',
       });
     } catch (err) {
       console.error("OAuth sign-up failed:", err);

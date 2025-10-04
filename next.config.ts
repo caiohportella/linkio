@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "dashing-spaniel-32.convex.cloud",
+      },
+      {
+        protocol: "https",
         hostname: "image-cdn-ak.spotifycdn.com",
       },
       {

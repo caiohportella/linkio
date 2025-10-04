@@ -33,7 +33,7 @@ export default function SignUpPage() {
   const [useClerkComponent, setUseClerkComponent] = useState(false);
 
   const handleOAuthLogin = async (
-    provider: "github" | "google" | "apple",
+    provider: "github" | "google",
   ) => {
     if (!isLoaded) return;
     
@@ -41,7 +41,7 @@ export default function SignUpPage() {
       setOauthLoading(provider);
       await signUp?.authenticateWithRedirect({
         strategy: `oauth_${provider}`,
-        redirectUrl: `${process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}/v1/oauth_callback`,
+        redirectUrl: "/sso-callback",
         redirectUrlComplete: "/dashboard",
       });
     } catch (err) {

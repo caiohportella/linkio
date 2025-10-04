@@ -4,12 +4,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Unauthenticated } from "convex/react";
-// import { useState } from "react";
-// import { CustomAuthModal } from "../CustomAuthModal";
 
 export function HeroSection() {
-  // const [showModal, setShowModal] = useState(false);
-
   return (
     <>
       <motion.section
@@ -85,9 +81,6 @@ export function HeroSection() {
           </div>
         </motion.div>
       </motion.section>
-
-      {/* Custom Modal */}
-      {/* <CustomAuthModal open={showModal} onOpenChange={setShowModal} /> */}
     </>
   );
 }

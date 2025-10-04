@@ -116,3 +116,21 @@ export const getUserIdBySlug = query({
     return links ? args.slug : null;
   },
 });
+
+export const getAllUsernames = query({
+  args: {},
+  returns: v.array(v.object({
+    _id: v.id("usernames"),
+    _creationTime: v.number(),
+    userId: v.string(),
+    username: v.string(),
+    slug: v.string(),
+  })),
+  handler: async ({ db }) => {
+    const usernames = await db.query("usernames").collect();
+    return usernames.map(username => ({
+      ...username,
+      slug: username.username
+    }));
+  },
+});

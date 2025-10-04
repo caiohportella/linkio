@@ -6,6 +6,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { CustomizationsWithUrl } from "@/convex/lib/userCustomizations";
 import { getBaseUrl } from "@/lib/utils";
 import { notFound } from "next/navigation";
+import { StructuredData } from "@/components/StructuredData";
 
 export async function generateMetadata({
   params,
@@ -112,13 +113,40 @@ const PublicLinkInBioPage = async ({
       }),
     ]);
 
+  // Get links data for structured data
+  const linksData = await client.query(api.lib.links.getLinksBySlug, {
+    slug: username,
+  });
+
+  // Get customizations data for structured data
+  const customizationsData = await client.query(api.lib.userCustomizations.getCustomizationsBySlug, {
+    slug: username,
+  });
+
+  const profileData = {
+    name: username,
+    description: customizationsData?.description || undefined,
+    image: customizationsData?.profilePictureUrl || undefined,
+    links: linksData?.map(link => ({
+      title: link.title,
+      url: link.url
+    })) || []
+  };
+
   return (
-    <PublicPageContent
-      username={username}
-      preloadedLinks={preloadedLinks}
-      preloadedCustomizations={preloadedCustomizations}
-      preloadedFolders={preloadedFolders} // Pass preloadedFolders to PublicPageContent
-    />
+    <>
+      <StructuredData 
+        type="profile" 
+        username={username} 
+        profileData={profileData}
+      />
+      <PublicPageContent
+        username={username}
+        preloadedLinks={preloadedLinks}
+        preloadedCustomizations={preloadedCustomizations}
+        preloadedFolders={preloadedFolders} // Pass preloadedFolders to PublicPageContent
+      />
+    </>
   );
 };
 export default PublicLinkInBioPage;

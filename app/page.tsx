@@ -4,10 +4,9 @@ import Footer from "@/components/Footer";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import Navbar from "@/components/Navbar";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import { getBaseUrl } from "@/lib/utils";
+import { StructuredData } from "@/components/StructuredData";
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = "Linkio - All that you are, in one link";
@@ -69,22 +68,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const { userId } = await auth();
-
-  if (userId) {
-    redirect("/dashboard");
-  }
-
   return (
-    <main className="relative overflow-hidden bg-background text-foreground">
-      <AnimatedBackground />
-      <Navbar />
-      <div className="relative z-10 flex flex-col items-center gap-y-32 px-4 pb-32">
-        <HeroSection />
-        <FeaturesSection />
-        <TestimonialsSection />
-        <Footer />
-      </div>
-    </main>
+    <>
+      <StructuredData type="website" />
+      <main className="relative overflow-hidden bg-background text-foreground">
+        <AnimatedBackground />
+        <Navbar />
+        <div className="relative z-10 flex flex-col items-center gap-y-32 px-4 pb-32">
+          <HeroSection />
+          <FeaturesSection />
+          <TestimonialsSection />
+          <Footer />
+        </div>
+      </main>
+    </>
   );
 }

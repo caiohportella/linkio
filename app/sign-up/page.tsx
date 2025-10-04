@@ -40,7 +40,7 @@ export default function SignUpPage() {
     try {
       setOauthLoading(provider);
       await signUp.authenticateWithRedirect({
-        strategy: `oauth_${provider}` as any,
+        strategy: `oauth_${provider}` as "oauth_google" | "oauth_github",
         redirectUrl: '/sign-in/sso-callback',
         redirectUrlComplete: '/dashboard',
       });

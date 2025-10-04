@@ -7,6 +7,8 @@ import Navbar from "@/components/Navbar";
 import { Metadata } from "next";
 import { getBaseUrl } from "@/lib/utils";
 import { StructuredData } from "@/components/StructuredData";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = "Linkio - All that you are, in one link";
@@ -68,6 +70,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
+  const { userId } = await auth();
+
+  if (userId) {
+    redirect("/dashboard");
+  }
+
   return (
     <>
       <StructuredData type="website" />

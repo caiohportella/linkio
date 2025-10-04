@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { Unauthenticated, Authenticated } from "convex/react";
+import { Unauthenticated } from "convex/react";
 
 export function HeroSection() {
   return (
@@ -29,7 +29,7 @@ export function HeroSection() {
         </motion.p>
 
         <motion.div
-          className="flex justify-center items-center gap-4"
+          className="flex justify-center items-center"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.8 }}
@@ -54,27 +54,6 @@ export function HeroSection() {
               </motion.span>
             </Button>
           </Unauthenticated>
-          
-          <Authenticated>
-            <Button
-              size="lg"
-              onClick={() => window.location.href = '/dashboard'}
-              className="px-8 py-6 text-lg font-semibold rounded-2xl cursor-pointer"
-            >
-              Go to Dashboard{" "}
-              <motion.span
-                initial={{ x: 0 }}
-                animate={{ x: [0, 10, 0] }}
-                transition={{
-                  duration: 1,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                <ArrowRight />
-              </motion.span>
-            </Button>
-          </Authenticated>
         </motion.div>
 
         <motion.div

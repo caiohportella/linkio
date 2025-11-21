@@ -38,7 +38,7 @@ export default function Page() {
             if (session?.currentTask) {
               // Check for tasks and navigate to custom UI to help users resolve them
               // See https://clerk.com/docs/guides/development/custom-flows/overview#session-tasks
-              console.log(session?.currentTask)
+              (session?.currentTask)
               router.push('/dashboard')
               return
             }

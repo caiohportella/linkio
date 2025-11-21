@@ -27,8 +27,6 @@ export async function POST(req: NextRequest) {
       userAgent: data.userAgent || req.headers.get("user-agents") || "unknown",
     };
 
-    console.log("Sending event to Tinybird:", trackingEvent);
-
     if (process.env.TINYBIRD_TOKEN && process.env.TINYBIRD_HOST) {
       try {
         const eventForTinybird = {

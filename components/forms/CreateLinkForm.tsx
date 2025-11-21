@@ -22,6 +22,7 @@ import {
   Trash2,
   TvMinimalPlayIcon,
   Clock,
+  Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
@@ -49,6 +50,10 @@ const MediaPreviewModal = dynamic(() => import("../MediaPreviewModal"), {
 });
 
 const ScheduleLinkModal = dynamic(() => import("../ScheduleLinkModal"), {
+  ssr: false,
+});
+
+const HighlightModal = dynamic(() => import("../HighlightModal"), {
   ssr: false,
 });
 
@@ -121,13 +126,22 @@ const formSchema = z
       })
       .nullable()
       .optional(),
+    highlight: z
+      .object({
+        imageUrl: z.string(),
+        text: z.string(),
+        url: z.string(),
+      })
+      .nullable()
+      .optional(),
     scheduledAt: z.number().nullable().optional(),
   })
   .superRefine((data, ctx) => {
     if (
       !data.url &&
       (!data.musicLinks || data.musicLinks.length === 0) &&
-      !data.playlistPreview
+      !data.playlistPreview &&
+      !data.highlight
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -153,6 +167,7 @@ const CreateLinkForm = () => {
   const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isHighlightModalOpen, setIsHighlightModalOpen] = useState(false);
   const [scheduleCleared, setScheduleCleared] = useState(false);
 
   const router = useRouter();
@@ -171,6 +186,7 @@ const CreateLinkForm = () => {
       musicLinks: [], // Initialize musicLinks in form
       editingMusicLink: null, // Initialize editingMusicLink in form
       mediaPreview: null,
+      highlight: null,
       scheduledAt: null,
     },
   });
@@ -179,6 +195,7 @@ const CreateLinkForm = () => {
   const editingMusicLink = form.watch("editingMusicLink"); // Watch editingMusicLink from form state
   const mediaPreview = sanitizeMediaPreview(form.watch("mediaPreview"));
   const playlistPreview = form.watch("playlistPreview");
+  const highlight = form.watch("highlight");
   const scheduledAt = form.watch("scheduledAt");
   const isScheduleActive = !!scheduledAt || isScheduleModalOpen;
 
@@ -220,6 +237,27 @@ const CreateLinkForm = () => {
     });
   };
 
+  const handleSetHighlight = (
+    data: {
+      url: string;
+      text: string;
+      imageUrl: string;
+      dominantColor?: string;
+    } | null,
+  ) => {
+    form.setValue("highlight", data, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+
+    if (data) {
+      form.setValue("url", data.url, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  };
+
   const handleSetScheduledAt = (value: number | null) => {
     form.setValue("scheduledAt", value, {
       shouldDirty: true,
@@ -229,16 +267,7 @@ const CreateLinkForm = () => {
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Form submitted with values:", values);
-    console.log("Form validation state:", {
-      hasTitle: !!values.title,
-      hasUrl: !!values.url,
-      hasMusicLinks: !!(values.musicLinks && values.musicLinks.length > 0),
-      hasPlaylistPreview: !!values.playlistPreview,
-      hasMediaPreview: !!values.mediaPreview,
-      playlistPreview: values.playlistPreview,
-      musicLinks: values.musicLinks,
-    });
+   
     setError(null);
 
     startSubmitting(async () => {
@@ -252,15 +281,16 @@ const CreateLinkForm = () => {
           musicAlbumArtUrl: values.musicLinks?.[0]?.musicAlbumArtUrl,
           mediaPreview: values.mediaPreview || undefined,
           playlistPreview: values.playlistPreview || undefined,
+          highlight: values.highlight || undefined,
           folderId: values.folderId as Id<"folders"> | undefined,
           scheduledAt:
             scheduleCleared || values.scheduledAt === null
               ? undefined
               : (values.scheduledAt ?? undefined),
         };
-        console.log("Calling createLink with data:", linkData);
+
         await createLink(linkData);
-        console.log("Link created successfully, redirecting to dashboard");
+        ("Link created successfully, redirecting to dashboard");
         router.push("/dashboard");
       } catch (err) {
         console.error("Error creating link:", err);
@@ -343,9 +373,11 @@ const CreateLinkForm = () => {
                   <div className="flex flex-wrap gap-2">
                     <Badge
                       variant="secondary"
-                      onClick={() => !mediaPreview && setIsMusicModalOpen(true)}
+                      onClick={() =>
+                        !mediaPreview && !highlight && setIsMusicModalOpen(true)
+                      }
                       className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                        mediaPreview
+                        mediaPreview || highlight
                           ? "bg-muted text-muted-foreground cursor-not-allowed"
                           : "cursor-pointer bg-accent/20 hover:bg-accent/30"
                       }`}
@@ -358,10 +390,11 @@ const CreateLinkForm = () => {
                       onClick={() =>
                         musicLinks.length === 0 &&
                         !playlistPreview &&
+                        !highlight &&
                         setIsMediaModalOpen(true)
                       }
                       className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                        musicLinks.length > 0 || playlistPreview
+                        musicLinks.length > 0 || playlistPreview || highlight
                           ? "bg-muted text-muted-foreground cursor-not-allowed"
                           : "cursor-pointer bg-accent/20 hover:bg-accent/30"
                       }`}
@@ -381,6 +414,23 @@ const CreateLinkForm = () => {
                       <Clock className="w-4 h-4" />
                       <span>Schedule</span>
                     </Badge>
+                    <Badge
+                      variant="secondary"
+                      onClick={() =>
+                        musicLinks.length === 0 &&
+                        !playlistPreview &&
+                        !mediaPreview &&
+                        setIsHighlightModalOpen(true)
+                      }
+                      className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        musicLinks.length > 0 || playlistPreview || mediaPreview
+                          ? "bg-muted text-muted-foreground cursor-not-allowed"
+                          : "cursor-pointer bg-accent/20 hover:bg-accent/30"
+                      }`}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>Highlight</span>
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -389,6 +439,8 @@ const CreateLinkForm = () => {
                 <input type="hidden" {...field} value={mediaPreview.url} />
               ) : playlistPreview ? (
                 <input type="hidden" {...field} value={playlistPreview.url} />
+              ) : highlight ? (
+                <input type="hidden" {...field} value={highlight.url} />
               ) : musicLinks.length === 0 ? (
                 <>
                   <FormControl>
@@ -405,8 +457,10 @@ const CreateLinkForm = () => {
                 </>
               ) : null}
 
-              {!mediaPreview && !playlistPreview && musicLinks.length > 0 && (
-                <div className="space-y-3 mt-2">
+              {!mediaPreview &&
+                !highlight &&
+                musicLinks.length > 0 && (
+                  <div className="space-y-3 mt-2">
                   <div className="flex flex-col gap-3">
                     {musicLinks.map((link, index) => {
                       const platform = SUPPORTED_MUSIC_PLATFORMS.find(
@@ -565,6 +619,39 @@ const CreateLinkForm = () => {
           </div>
         )}
 
+        {highlight && (
+          <div className="rounded-2xl border border-border p-4 flex items-center gap-4">
+            <div className="relative w-24 h-24 overflow-hidden rounded-xl">
+              <Image
+                src={highlight.imageUrl}
+                alt={highlight.text}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {highlight.text}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {highlight.url}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="cursor-pointer text-destructive hover:bg-destructive/10 rounded-full"
+              onClick={() => {
+                form.setValue("highlight", null);
+                form.setValue("url", "");
+              }}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
         {scheduledAt && (
           <div className="rounded-2xl border border-border p-4 flex flex-col gap-2">
             <div className="flex items-center justify-between">
@@ -616,43 +703,6 @@ const CreateLinkForm = () => {
             type="submit"
             disabled={isSubmitting}
             className="rounded-2xl cursor-pointer"
-            onClick={() => {
-              console.log("Create Link button clicked");
-              console.log("Form values at click:", form.getValues());
-              console.log("Form errors at click:", form.formState.errors);
-              console.log("Form is valid:", form.formState.isValid);
-              console.log("Form is submitting:", form.formState.isSubmitting);
-              console.log("Form is dirty:", form.formState.isDirty);
-
-              // Try to validate the form manually
-              form.trigger().then((isValid) => {
-                console.log("Manual form validation result:", isValid);
-                if (!isValid) {
-                  console.log(
-                    "Form validation errors after trigger:",
-                    form.formState.errors,
-                  );
-                }
-              });
-
-              // Check playlistPreview structure specifically
-              const playlistPreview = form.getValues().playlistPreview;
-              if (playlistPreview) {
-                console.log("PlaylistPreview validation check:", {
-                  hasPlatform: !!playlistPreview.platform,
-                  hasUrl: !!playlistPreview.url,
-                  hasPlaylistId: !!playlistPreview.playlistId,
-                  hasTitle: !!playlistPreview.title,
-                  hasDescription: !!playlistPreview.description,
-                  hasThumbnailUrl: !!playlistPreview.thumbnailUrl,
-                  hasTrackCount: typeof playlistPreview.trackCount,
-                  hasOwnerName: !!playlistPreview.ownerName,
-                  hasTracks: Array.isArray(playlistPreview.tracks),
-                  tracksLength: playlistPreview.tracks?.length,
-                  firstTrack: playlistPreview.tracks?.[0],
-                });
-              }
-            }}
           >
             {isSubmitting ? (
               <>
@@ -681,7 +731,6 @@ const CreateLinkForm = () => {
         handleRemoveMusicLink={handleRemoveMusicLink}
         showExistingLinksOnOpen={musicLinks.length > 0 && !editingMusicLink} // Pass the new prop
         onPlaylistAdded={(playlist) => {
-          console.log("Playlist added to form:", playlist);
           form.setValue("playlistPreview", playlist);
           form.setValue("url", playlist.url);
           toast.success(`Playlist "${playlist.title}" added successfully!`);
@@ -698,6 +747,12 @@ const CreateLinkForm = () => {
         onOpenChange={setIsScheduleModalOpen}
         initialValue={scheduledAt ?? undefined}
         onConfirm={handleSetScheduledAt}
+      />
+      <HighlightModal
+        isOpen={isHighlightModalOpen}
+        onOpenChange={setIsHighlightModalOpen}
+        onConfirm={handleSetHighlight}
+        initialValue={highlight || undefined}
       />
     </Form>
   );

@@ -8,6 +8,7 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import MusicCard from "./MusicCard";
+import HighlightCard from "./HighlightCard";
 import { ChevronLeft, Folder } from "lucide-react"; // Import ChevronLeft icon and Folder icon
 import { useState } from "react"; // Import useState
 import {
@@ -170,10 +171,15 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                       link.musicLinks && link.musicLinks.length > 0
                     ),
                     hasMediaPreview: !!link.mediaPreview,
+                    hasHighlight: !!link.highlight,
                     playlistPreview: link.playlistPreview,
                     musicLinks: link.musicLinks,
+                    highlight: link.highlight,
                   });
                   const mediaPreview = sanitizeMediaPreview(link.mediaPreview);
+                  if (link.highlight) {
+                    return <HighlightCard key={link._id} link={link} />;
+                  }
                   if (mediaPreview) {
                     return (
                       <Link
@@ -552,16 +558,10 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
           >
             <div className="space-y-4">
               {filteredLinks.map((link) => {
-                console.log("Processing link:", link._id, {
-                  hasPlaylistPreview: !!link.playlistPreview,
-                  hasMusicLinks: !!(
-                    link.musicLinks && link.musicLinks.length > 0
-                  ),
-                  hasMediaPreview: !!link.mediaPreview,
-                  playlistPreview: link.playlistPreview,
-                  musicLinks: link.musicLinks,
-                });
                 const mediaPreview = sanitizeMediaPreview(link.mediaPreview);
+                if (link.highlight) {
+                  return <HighlightCard key={link._id} link={link} />;
+                }
                 if (mediaPreview) {
                   return (
                     <Link

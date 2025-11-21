@@ -60,6 +60,13 @@ export default defineSchema({
         ),
       }),
     ),
+    highlight: v.optional(
+      v.object({
+        imageUrl: v.string(),
+        text: v.string(),
+        url: v.string(),
+      }),
+    ),
     scheduledAt: v.optional(v.number()),
     folderId: v.optional(v.id("folders")), // New field to associate links with folders
   })

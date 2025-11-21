@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
-    console.log("Playlist API called with URL:", url);
+    ("Playlist API called with URL:", url);
 
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
@@ -13,26 +13,26 @@ export async function POST(request: NextRequest) {
     let playlistData = null;
 
     if (url.includes("spotify.com")) {
-      console.log("Detected Spotify playlist, fetching metadata...");
+      ("Detected Spotify playlist, fetching metadata...");
       playlistData = await fetchSpotifyPlaylistMetadata(url);
     } else if (url.includes("music.apple.com")) {
-      console.log("Detected Apple Music playlist, fetching metadata...");
+      ("Detected Apple Music playlist, fetching metadata...");
       playlistData = await fetchAppleMusicPlaylistMetadata(url);
     } else if (url.includes("music.youtube.com")) {
-      console.log("Detected YouTube Music playlist, fetching metadata...");
+      ("Detected YouTube Music playlist, fetching metadata...");
       playlistData = await fetchYouTubeMusicPlaylistMetadata(url);
     } else if (url.includes("tidal.com")) {
-      console.log("Detected Tidal playlist, fetching metadata...");
+      ("Detected Tidal playlist, fetching metadata...");
       playlistData = await fetchTidalPlaylistMetadata(url);
     } else if (url.includes("music.amazon.com")) {
-      console.log("Detected Amazon Music playlist, fetching metadata...");
+      ("Detected Amazon Music playlist, fetching metadata...");
       playlistData = await fetchAmazonMusicPlaylistMetadata(url);
     } else if (url.includes("deezer.com")) {
-      console.log("Detected Deezer playlist, fetching metadata...");
+      ("Detected Deezer playlist, fetching metadata...");
       playlistData = await fetchDeezerPlaylistMetadata(url);
     }
 
-    console.log("Playlist data result:", playlistData);
+    ("Playlist data result:", playlistData);
 
     if (!playlistData) {
       return NextResponse.json(
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
 async function fetchSpotifyPlaylistMetadata(url: string) {
   try {
-    console.log("Fetching Spotify playlist metadata for URL:", url);
+    ("Fetching Spotify playlist metadata for URL:", url);
 
     // Extract playlist ID from URL
     const playlistIdMatch = url.match(/playlist\/([a-zA-Z0-9]+)/);
@@ -62,7 +62,7 @@ async function fetchSpotifyPlaylistMetadata(url: string) {
     }
 
     const playlistId = playlistIdMatch[1];
-    console.log("Extracted playlist ID:", playlistId);
+    ("Extracted playlist ID:", playlistId);
 
     // Check if environment variables are set
     if (!process.env.SPOTIFY_CLIENT_ID || !process.env.SPOTIFY_CLIENT_SECRET) {
@@ -70,7 +70,7 @@ async function fetchSpotifyPlaylistMetadata(url: string) {
       throw new Error("Spotify API credentials not configured");
     }
 
-    console.log("Getting Spotify access token...");
+    ("Getting Spotify access token...");
     // Get Spotify access token
     const tokenResponse = await fetch(
       "https://accounts.spotify.com/api/token",

@@ -341,15 +341,6 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
       potentialFullUrl = finalUrl; // Update potentialFullUrl for validation
     }
 
-    console.log("musicInput:", musicInput);
-    console.log("selectedLinkType.baseUrl:", selectedLinkType.baseUrl);
-    console.log("potentialFullUrl:", potentialFullUrl);
-    console.log("finalUrl:", finalUrl);
-    console.log(
-      "isValidURL:",
-      selectedLinkType.urlPattern.test(potentialFullUrl),
-    );
-
     if (!selectedLinkType.urlPattern.test(potentialFullUrl)) {
       toast.error("Please enter a valid URL or ID for the selected link type.");
       return;
@@ -359,10 +350,8 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
 
     try {
       // Check if this is a playlist link type
-      if (selectedLinkType.type === "playlist") {
-        console.log("Detected playlist link type, calling playlist API...");
-        console.log("Final URL:", finalUrl);
-
+      // Only treat as playlist preview if we don't have existing music links
+      if (selectedLinkType.type === "playlist" && musicLinks.length === 0) {
         // Use playlist API for playlist links
         const response = await fetch("/api/playlist/preview", {
           method: "POST",

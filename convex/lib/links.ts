@@ -57,6 +57,13 @@ export const getLinksBySlug = query({
           ),
         }),
       ),
+      highlight: v.optional(
+        v.object({
+          imageUrl: v.string(),
+          text: v.string(),
+          url: v.string(),
+        }),
+      ),
       scheduledAt: v.optional(v.number()),
       folderId: v.optional(v.id("folders")), // Add to return type
     }),
@@ -139,6 +146,13 @@ export const getLinksByUserId = query({
           ),
         }),
       ),
+      highlight: v.optional(
+        v.object({
+          imageUrl: v.string(),
+          text: v.string(),
+          url: v.string(),
+        }),
+      ),
       scheduledAt: v.optional(v.number()),
       folderId: v.optional(v.id("folders")), // Add to return type
     }),
@@ -210,6 +224,13 @@ export const updateLink = mutation({
         thumbnailUrl: v.string(),
       }),
     ),
+    highlight: v.optional(
+      v.object({
+        imageUrl: v.string(),
+        text: v.string(),
+        url: v.string(),
+      }),
+    ),
     clearSchedule: v.optional(v.boolean()),
     scheduledAt: v.optional(v.number()),
   },
@@ -247,6 +268,10 @@ export const updateLink = mutation({
 
     if (args.mediaPreview !== undefined) {
       updatePayload.mediaPreview = args.mediaPreview || undefined;
+    }
+
+    if (args.highlight !== undefined) {
+      updatePayload.highlight = args.highlight || undefined;
     }
 
     if (args.scheduledAt !== undefined) {
@@ -372,6 +397,13 @@ export const getLinksByFolderId = query({
           ),
         }),
       ),
+      highlight: v.optional(
+        v.object({
+          imageUrl: v.string(),
+          text: v.string(),
+          url: v.string(),
+        }),
+      ),
       scheduledAt: v.optional(v.number()),
       folderId: v.optional(v.id("folders")),
     }),
@@ -438,6 +470,13 @@ export const createLink = mutation({
         ),
       }),
     ),
+    highlight: v.optional(
+      v.object({
+        imageUrl: v.string(),
+        text: v.string(),
+        url: v.string(),
+      }),
+    ),
     scheduledAt: v.optional(v.number()),
     folderId: v.optional(v.id("folders")), // New optional argument
   },
@@ -458,6 +497,7 @@ export const createLink = mutation({
       musicAlbumArtUrl: args.musicAlbumArtUrl || undefined, // Store musicAlbumArtUrl
       mediaPreview: args.mediaPreview || undefined,
       playlistPreview: args.playlistPreview || undefined,
+      highlight: args.highlight || undefined,
       scheduledAt: args.scheduledAt ?? undefined,
       folderId: args.folderId || undefined, // Store folderId
     });

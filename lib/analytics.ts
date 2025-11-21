@@ -17,7 +17,7 @@ export async function trackLinkClick(e: ClientTrackingData) {
       referrer: e.referrer || document.referrer || "direct",
     };
 
-    console.log("Link click tracked:", trackingData);
+    ("Link click tracked:", trackingData);
 
     await fetch("/api/track-click", {
       method: "POST",
@@ -136,7 +136,7 @@ export async function fetchLinkAnalytics(
     );
 
     if (!tinybirdRes.ok) {
-      console.log("Fast link analytics failed, falling back to the original");
+      ("Fast link analytics failed, falling back to the original");
 
       tinybirdRes = await fetch(
         `${process.env.TINYBIRD_HOST}/v0/pipes/link_analytics.json?profileUserId=${userId}&linkId=${linkId}&days_back=${daysBack}`,

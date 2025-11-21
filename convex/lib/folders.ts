@@ -22,7 +22,6 @@ export const createFolder = mutation({
       name: args.name,
       position: position, // Use the count of existing folders for initial position
     });
-    console.log("Created folder with ID:", newFolderId);
     return newFolderId;
   },
 });
@@ -40,7 +39,6 @@ export const getFoldersByUserId = query({
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .order("asc")
       .collect();
-    console.log("Fetched folders for user", args.userId, ":", folders);
     return folders;
   },
 });

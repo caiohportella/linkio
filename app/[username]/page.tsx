@@ -32,18 +32,25 @@ export async function generateMetadata({
     "My personalized link-in-bio page.";
 
   // Handle profile picture URL properly
-  let imageUrl = `${getBaseUrl()}/logo.png`; // Default fallback with full URL
+  let profilePicUrl = "";
 
   if (preloadedCustomizationsData?.profilePictureUrl) {
     // If it's already a full URL, use it as is
     if (preloadedCustomizationsData.profilePictureUrl.startsWith("http")) {
-      imageUrl = preloadedCustomizationsData.profilePictureUrl;
+      profilePicUrl = preloadedCustomizationsData.profilePictureUrl;
     } else {
       // If it's a relative URL, make it absolute
-      imageUrl = preloadedCustomizationsData.profilePictureUrl.startsWith("/")
+      profilePicUrl = preloadedCustomizationsData.profilePictureUrl.startsWith("/")
         ? `${getBaseUrl()}${preloadedCustomizationsData.profilePictureUrl}`
         : `${getBaseUrl()}/${preloadedCustomizationsData.profilePictureUrl}`;
     }
+  }
+
+  const ogImageUrl = new URL(`${getBaseUrl()}/api/og`);
+  ogImageUrl.searchParams.set("title", title);
+  ogImageUrl.searchParams.set("description", description);
+  if (profilePicUrl) {
+    ogImageUrl.searchParams.set("image", profilePicUrl);
   }
 
   return {
@@ -54,11 +61,11 @@ export async function generateMetadata({
       description: description,
       images: [
         {
-          url: imageUrl,
+          url: ogImageUrl.toString(),
           width: 1200,
           height: 630,
           alt: `${username}'s profile picture`,
-          type: "image/jpeg",
+          type: "image/png",
         },
       ],
       url: `${getBaseUrl()}/${username}`,
@@ -72,11 +79,11 @@ export async function generateMetadata({
       site: "Linkio",
       title: title,
       description: description,
-      images: [imageUrl],
+      images: [ogImageUrl.toString()],
     },
     other: {
-      "og:image:secure_url": imageUrl,
-      "og:image:type": "image/jpeg",
+      "og:image:secure_url": ogImageUrl.toString(),
+      "og:image:type": "image/png",
     },
   };
 }

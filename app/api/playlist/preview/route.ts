@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
-    ("Playlist API called with URL:", url);
 
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
@@ -32,8 +31,6 @@ export async function POST(request: NextRequest) {
       playlistData = await fetchDeezerPlaylistMetadata(url);
     }
 
-    ("Playlist data result:", playlistData);
-
     if (!playlistData) {
       return NextResponse.json(
         { error: "Unsupported playlist platform" },
@@ -53,7 +50,6 @@ export async function POST(request: NextRequest) {
 
 async function fetchSpotifyPlaylistMetadata(url: string) {
   try {
-    ("Fetching Spotify playlist metadata for URL:", url);
 
     // Extract playlist ID from URL
     const playlistIdMatch = url.match(/playlist\/([a-zA-Z0-9]+)/);
@@ -62,7 +58,6 @@ async function fetchSpotifyPlaylistMetadata(url: string) {
     }
 
     const playlistId = playlistIdMatch[1];
-    ("Extracted playlist ID:", playlistId);
 
     // Check if environment variables are set
     if (!process.env.SPOTIFY_CLIENT_ID || !process.env.SPOTIFY_CLIENT_SECRET) {

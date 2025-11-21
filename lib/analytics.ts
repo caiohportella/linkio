@@ -17,8 +17,6 @@ export async function trackLinkClick(e: ClientTrackingData) {
       referrer: e.referrer || document.referrer || "direct",
     };
 
-    ("Link click tracked:", trackingData);
-
     await fetch("/api/track-click", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

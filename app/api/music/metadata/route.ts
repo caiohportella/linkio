@@ -659,7 +659,6 @@ async function fetchTidalMetadata(url: string): Promise<MusicMetadata | null> {
     const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
     if (titleMatch) {
       const titleText = titleMatch[1];
-      ("Tidal raw title:", titleText);
 
       // Remove Tidal branding and extract artist
       title = titleText
@@ -667,8 +666,6 @@ async function fetchTidalMetadata(url: string): Promise<MusicMetadata | null> {
         .replace(/\s*-\s*TIDAL.*$/i, "")
         .replace(/\s*on\s*TIDAL.*$/i, "")
         .trim();
-
-      ("Tidal cleaned title:", title);
 
       // Try to extract artist from title patterns
       const artistPatterns = [
@@ -691,7 +688,6 @@ async function fetchTidalMetadata(url: string): Promise<MusicMetadata | null> {
             .replace(/&gt;/g, ">")
             .replace(/&quot;/g, '"')
             .replace(/&#39;/g, "'");
-          ("Tidal artist found:", artist);
           // Clean up the title by removing the artist part
           title = titleText
             .replace(pattern, "")
@@ -725,7 +721,6 @@ async function fetchTidalMetadata(url: string): Promise<MusicMetadata | null> {
           .replace(/&gt;/g, ">")
           .replace(/&quot;/g, '"')
           .replace(/&#39;/g, "'");
-        ("Tidal artist from meta tag:", artist);
       }
     }
 
@@ -743,7 +738,6 @@ async function fetchTidalMetadata(url: string): Promise<MusicMetadata | null> {
           .replace(/&gt;/g, ">")
           .replace(/&quot;/g, '"')
           .replace(/&#39;/g, "'");
-        ("Tidal artist from structured data:", artist);
       }
     }
 
@@ -760,7 +754,7 @@ async function fetchTidalMetadata(url: string): Promise<MusicMetadata | null> {
       artist: artist || undefined,
       artworkUrl: artworkUrl || undefined,
     };
-    ("Tidal metadata result:", result);
+
     return result;
   } catch (error) {
     console.error("Tidal direct scraping failed", error);

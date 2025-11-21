@@ -290,10 +290,8 @@ const CreateLinkForm = () => {
         };
 
         await createLink(linkData);
-        ("Link created successfully, redirecting to dashboard");
         router.push("/dashboard");
       } catch (err) {
-        console.error("Error creating link:", err);
         setError(err instanceof Error ? err.message : "Failed to create link");
       }
     });

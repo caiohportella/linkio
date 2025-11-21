@@ -134,8 +134,7 @@ export async function fetchLinkAnalytics(
     );
 
     if (!tinybirdRes.ok) {
-      ("Fast link analytics failed, falling back to the original");
-
+      console.warn("Fast link analytics failed, falling back to the original");
       tinybirdRes = await fetch(
         `${process.env.TINYBIRD_HOST}/v0/pipes/link_analytics.json?profileUserId=${userId}&linkId=${linkId}&days_back=${daysBack}`,
         {

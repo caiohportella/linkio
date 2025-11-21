@@ -165,17 +165,6 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
               {links
                 .filter((link) => !link.folderId)
                 .map((link) => {
-                  console.log("Processing unfolder link:", link._id, {
-                    hasPlaylistPreview: !!link.playlistPreview,
-                    hasMusicLinks: !!(
-                      link.musicLinks && link.musicLinks.length > 0
-                    ),
-                    hasMediaPreview: !!link.mediaPreview,
-                    hasHighlight: !!link.highlight,
-                    playlistPreview: link.playlistPreview,
-                    musicLinks: link.musicLinks,
-                    highlight: link.highlight,
-                  });
                   const mediaPreview = sanitizeMediaPreview(link.mediaPreview);
                   if (link.highlight) {
                     return <HighlightCard key={link._id} link={link} />;
@@ -238,18 +227,6 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                     );
                   }
                   if (link.playlistPreview) {
-                    console.log(
-                      "Rendering playlistPreview for link:",
-                      link._id,
-                      link.playlistPreview,
-                    );
-                    console.log("Platform:", link.playlistPreview.platform);
-                    console.log("URL:", link.url);
-                    console.log(
-                      "Is Deezer playlist:",
-                      isDeezerPlaylist(link.url),
-                    );
-
                     // Check for Spotify playlist and render as iframe
                     if (
                       link.playlistPreview.platform === "Spotify" &&
@@ -325,17 +302,11 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                       link.playlistPreview.platform === "Deezer" &&
                       isDeezerPlaylist(link.url)
                     ) {
-                      console.log("Deezer playlist detected:", link.url);
                       // Try to extract from URL first, fallback to playlistPreview data
                       let playlistId = extractDeezerPlaylistId(link.url);
                       if (!playlistId && link.playlistPreview.playlistId) {
                         playlistId = link.playlistPreview.playlistId;
-                        console.log(
-                          "Using playlist ID from playlistPreview data:",
-                          playlistId,
-                        );
                       }
-                      console.log("Final Deezer playlist ID:", playlistId);
                       if (playlistId) {
                         const embedUrl = generateDeezerEmbedUrl(playlistId);
                         return (
@@ -479,11 +450,6 @@ const Links = ({ preloadedLinks, preloadedFolders }: LinksProps) => {
                       </motion.div>
                     );
                   } else if (link.musicLinks && link.musicLinks.length > 0) {
-                    console.log(
-                      "Rendering musicLinks for link:",
-                      link._id,
-                      link.musicLinks,
-                    );
                     return <MusicCard key={link._id} link={link} />;
                   } else {
                     return (

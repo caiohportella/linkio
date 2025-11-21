@@ -12,22 +12,16 @@ export async function POST(request: NextRequest) {
     let playlistData = null;
 
     if (url.includes("spotify.com")) {
-      ("Detected Spotify playlist, fetching metadata...");
       playlistData = await fetchSpotifyPlaylistMetadata(url);
     } else if (url.includes("music.apple.com")) {
-      ("Detected Apple Music playlist, fetching metadata...");
       playlistData = await fetchAppleMusicPlaylistMetadata(url);
     } else if (url.includes("music.youtube.com")) {
-      ("Detected YouTube Music playlist, fetching metadata...");
       playlistData = await fetchYouTubeMusicPlaylistMetadata(url);
     } else if (url.includes("tidal.com")) {
-      ("Detected Tidal playlist, fetching metadata...");
       playlistData = await fetchTidalPlaylistMetadata(url);
     } else if (url.includes("music.amazon.com")) {
-      ("Detected Amazon Music playlist, fetching metadata...");
       playlistData = await fetchAmazonMusicPlaylistMetadata(url);
     } else if (url.includes("deezer.com")) {
-      ("Detected Deezer playlist, fetching metadata...");
       playlistData = await fetchDeezerPlaylistMetadata(url);
     }
 
@@ -50,7 +44,6 @@ export async function POST(request: NextRequest) {
 
 async function fetchSpotifyPlaylistMetadata(url: string) {
   try {
-
     // Extract playlist ID from URL
     const playlistIdMatch = url.match(/playlist\/([a-zA-Z0-9]+)/);
     if (!playlistIdMatch) {
@@ -65,7 +58,7 @@ async function fetchSpotifyPlaylistMetadata(url: string) {
       throw new Error("Spotify API credentials not configured");
     }
 
-    ("Getting Spotify access token...");
+    console.log("Getting Spotify access token...");
     // Get Spotify access token
     const tokenResponse = await fetch(
       "https://accounts.spotify.com/api/token",

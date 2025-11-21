@@ -361,8 +361,6 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
           body: JSON.stringify({ url: finalUrl }),
         });
 
-        console.log("Playlist API response status:", response.status);
-
         if (!response.ok) {
           const errorText = await response.text();
           console.error("Playlist API error:", errorText);
@@ -372,11 +370,9 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
         }
 
         const playlistData = await response.json();
-        console.log("Received playlist data:", playlistData);
 
         // Pass the playlist data back to the parent component
         if (onPlaylistAdded) {
-          console.log("Calling onPlaylistAdded with data:", playlistData);
           onPlaylistAdded(playlistData);
         }
 
@@ -406,10 +402,7 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
         !musicArtistName.trim() ||
         !musicAlbumArtUrl.trim()
       ) {
-        console.log("Fetching metadata for URL:", finalUrl);
-        console.log("Platform:", selectedPlatform.name);
         const fetched = await fetchMetadataForUrl(finalUrl);
-        console.log("Fetched metadata:", fetched);
         if (fetched) {
           autoMetadata = {
             title: musicTrackTitle.trim() || fetched.title,
@@ -426,7 +419,6 @@ const MusicLinksModal: React.FC<MusicLinksModalProps> = ({
             setMusicAlbumArtUrl(fetched.artworkUrl);
           }
         }
-        console.log("Final autoMetadata:", autoMetadata);
       }
 
       const newLink = {

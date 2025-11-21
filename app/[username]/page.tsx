@@ -70,7 +70,7 @@ export async function generateMetadata({
       ],
       url: `${getBaseUrl()}/${username}`,
       siteName: "Linkio",
-      type: "profile",
+      type: "website",
       locale: "en_US",
     },
     twitter: {

@@ -69,9 +69,9 @@ export async function GET(request: Request) {
               <img
                 src={image}
                 alt={title}
-                width="200"
-                height="200"
                 style={{
+                  width: "200px",
+                  height: "200px",
                   borderRadius: "100px",
                   objectFit: "cover",
                   border: "4px solid rgba(255,255,255,0.2)",
@@ -110,26 +110,6 @@ export async function GET(request: Request) {
               >
                 {description}
               </div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              position: "absolute",
-              bottom: 40,
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 24,
-                fontWeight: "bold",
-                color: "white",
-              }}
-            >
-              linkio.app.br
             </div>
           </div>
         </div>
